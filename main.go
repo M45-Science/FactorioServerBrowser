@@ -29,6 +29,8 @@ const (
 	RefreshInterval = time.Minute * 5
 
 	BGFetchInterval = time.Hour * 3
+	//If we get less results than this, assume the data is incomplete or corrupt
+	MinValidCount = 25
 )
 
 var (

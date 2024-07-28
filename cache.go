@@ -28,18 +28,18 @@ func ReadServerList(ServState *ServerStateData) {
 			tempServerList := []ServerListItem{}
 			err := json.Unmarshal([]byte(file), &tempServerList)
 			if err != nil {
-				errLog("ReadGCfg: Unmarshal failure")
+				errLog("ReadServerList: Unmarshal failure")
 				return
 			}
 
-			if len(tempServerList) > 25 {
+			if len(tempServerList) > MinValidCount {
 				ServState.TempServersList = tempServerList
 				ServState.LastRefresh = lastRefresh
 				errLog("Read cached server list.")
 			}
 			return
 		} else {
-			errLog("ReadGCfg: ReadFile failure")
+			errLog("ReadServerList: Read file failure")
 			return
 		}
 	}
@@ -53,7 +53,7 @@ func WriteServerList(ServState *ServerStateData) {
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
 
-	if len(ServState.ServersList) <= 25 {
+	if len(ServState.ServersList) <= MinValidCount {
 		return
 	}
 
@@ -72,7 +72,7 @@ func WriteServerList(ServState *ServerStateData) {
 	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		errLog("WriteServerList: WriteFile failure")
+		errLog("WriteServerList: Write file failure")
 	}
 
 	err = os.Rename(tempPath, CacheFile)
