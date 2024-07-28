@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factorio Server Listings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            /* Dark background color */
+            color: #e0e0e0;
+            /* Light text color */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            /* Slightly lighter background for the container */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .server-item {
+            border-bottom: 1px solid #333;
+            padding: 10px 0;
+        }
+
+        .server-item:last-child {
+            border-bottom: none;
+        }
+
+        .server-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .server-title {
+            font-size: 1.5em;
+            margin: 0;
+            color: #f5f5f5;
+            /* Light color for the title */
+        }
+
+        .server-meta {
+            color: #b0b0b0;
+            /* Lighter gray for meta information */
+        }
+
+        .server-details {
+            margin-top: 10px;
+        }
+
+        .mod-list,
+        .player-list,
+        .desc,
+        .tag-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .mod-list li,
+        .player-list li,
+        .desc li,
+        .tag-list li {
+            background: #333;
+            /* Dark background for list items */
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+
+        .mod-list li {
+            font-weight: bold;
+        }
+
+        .mod-list li span {
+            font-weight: normal;
+            color: #888;
+            /* Lighter gray for version text */
+        }
+
+        .server-footer {
+            color: #888;
+            /* Lighter gray for footer text */
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+
+        .form-container {
+            background: #333;
+            padding: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px; /* Adjust the gap between form items as needed */
+            max-width: 800px; /* Max width to control the container's size */
+            width: 100%;
+        }
+
+        .form-item {
+            flex: 1 1 calc(50% - 20px); /* Adjust for 2 columns with gap */
+            box-sizing: border-box;
+        }
+
+        .form-item input {
+            width: calc(100% - 20px); /* Full width minus padding */
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+
+        /* Add a smooth transition for color changes */
+        body,
+        .container,
+        .server-item,
+        .server-header,
+        .server-title,
+        .server-meta,
+        .server-details,
+        .mod-list li,
+        .player-list li,
+        .desc li,
+        .tag-list li,
+        .server-footer {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        
+    </style>
+    <script>
+        // JavaScript to auto-refresh the page
+        function autoRefresh() {
+            setTimeout(function () {
+                window.location.reload();
+            }, 300000);
+        }
+        window.onload = autoRefresh;
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Factorio Server Listings</h1>
+        <p>{{ .UserAgent }}<br>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
+                href="https://m45sci.xyz">M45-Science</a></p>
+        {{ if .LastRefresh }}
+        <p>Last refreshed: {{ .LastRefresh.Format "2006-01-02 15:04:05 UTC" }}</p>
+        {{ end }}
+        Search:<br>
+        <div class="form-container">
+            <div class="form-item">
+                <form action="" method="get">
+                    <label for="query">Name:</label><br>
+                    <input type="text" name="name" required>
+                    <button type="submit">Go</button>
+                </form>
+            </div>
+
+            <div class="form-item">
+                <form action="" method="get">
+                    <label for="query">Description:</label><br>
+                    <input type="text" name="desc" required>
+                    <button type="submit">Go</button>
+                </form>
+            </div>
+
+            <div class="form-item">
+                <form action="" method="get">
+                    <label for="query">Tag:</label><br>
+                    <input type="text" name="tag" required>
+                    <button type="submit">Go</button>
+                </form>
+            </div>
+
+            <div class="form-item">
+                <form action="" method="get">
+                    <label for="query">Player:</label><br>
+                    <input type="text" name="player" required>
+                    <button type="submit">Go</button>
+                </form>
+            </div>
+
+        </div>
+        {{ range .ServersList }}
+        <div class="server-item">
+            <div class="server-header">
+                <h2 class="server-title">{{ .Name }} </h2>
+                <div class="server-meta">
+                    <a href="{{ .ConnectURL }}">(quick connect)</a><br>
+                    {{ if len .Players }}
+                    <span>Players: {{ len .Players }} / {{ .Max_players }}</span><br>
+                    {{ else }}
+                    <span>Players: None</span><br>
+                    {{ end }}
+
+                    {{ if .Has_password }}
+                    <span>Has Password: YES</span><br>
+                    {{ end }}
+
+                    <span>Version: {{ .Application_version.Game_version }}</span><br>
+                    {{ if .Modded }}
+                    <span>Mods Installed: {{ .Mod_count }}</span>
+                    {{ end }}
+                </div>
+            </div>
+            <div class="server-details">
+                {{ if .Description }}
+                <p><strong>Description:</strong></p>
+                <ul class="desc">
+                    <li>{{ .Description }}</li>
+                </ul>
+                {{ end }}
+                {{ if .Mods }}
+                <p><strong>Mods:</strong></p>
+                <ul class="mod-list">
+                    <li>
+                        {{ range .Mods }}
+                        {{ .Name }} v{{ .Version }},
+                        {{ end }}
+                    </li>
+                </ul>
+                {{ end }}
+                {{ if .Players }}
+                <p><strong>Players:</strong></p>
+                <ul class="player-list">
+                    <li>
+                        {{ range .Players }}
+                        {{ . }},
+                        {{ end }}
+                    </li>
+                </ul>
+                {{ end }}
+                {{ if .Tags }}
+                <p><strong>Tags:</strong></p>
+                <ul class="tag-list">
+                    <li>
+                        {{ range .Tags }}
+                        {{ . }},
+                        {{ end }}
+                    </li>
+                </ul>
+                {{ end }}
+            </div>
+        </div>
+        {{ else }}
+        <p>No servers found.</p>
+        {{ end }}
+        <div class="server-footer">
+            <p>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
+                    href="https://m45sci.xyz">M45-Science</a></p>
+        </div>
+    </div>
+</body>
+
+</html>
