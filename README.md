@@ -1,5 +1,9 @@
 # Web viewer for the Factorio server list, with caching
 
+Live version:
+
+http://go-game:8080/
+
 Usage of ./goFactServView:
 
   -ip string
