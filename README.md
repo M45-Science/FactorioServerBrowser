@@ -1,3 +1,5 @@
+# Web viewer for the Factorio server list, with caching
+
 Usage of ./goFactServView:
 
   -ip string
