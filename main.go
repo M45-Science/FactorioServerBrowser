@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	Version   = "0.0.7"
-	VDate     = "07282024-0324p"
+	Version   = "0.0.8"
+	VDate     = "07282024-0437p"
 	ProgName  = "goFactServView"
 	UserAgent = ProgName + "-" + Version
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
@@ -90,6 +90,7 @@ func main() {
 		queryItems := r.URL.Query()
 		if len(queryItems) > 0 {
 			//errLog("Query: %v", queryItems)
+			found := false
 			for key, values := range queryItems {
 				if len(key) == 0 || len(values) == 0 {
 					continue
@@ -102,6 +103,7 @@ func main() {
 							tempParams.ServersList = append(tempParams.ServersList, tempParams.TempServersList[s])
 						}
 					}
+					found = true
 					break
 				} else if strings.EqualFold(key, "desc") {
 					for s, server := range tempParams.TempServersList {
@@ -111,6 +113,7 @@ func main() {
 							tempParams.ServersList = append(tempParams.ServersList, tempParams.TempServersList[s])
 						}
 					}
+					found = true
 					break
 				} else if strings.EqualFold(key, "tag") {
 					for s, server := range tempParams.TempServersList {
@@ -121,6 +124,7 @@ func main() {
 							}
 						}
 					}
+					found = true
 					break
 				} else if strings.EqualFold(key, "player") {
 					for s, server := range tempParams.TempServersList {
@@ -133,14 +137,15 @@ func main() {
 							}
 						}
 					}
+					found = true
 					break
-				} else {
-					//errLog("Invalid item: %v", key)
-					continue
 				}
-
 			}
-			tempParams.ServersList = sortServers(tempParams.ServersList)
+			if found {
+				tempParams.ServersList = sortServers(tempParams.ServersList)
+			} else {
+				tempParams.ServersList = tempParams.TempServersList
+			}
 		} else {
 			//errLog("Not a query")
 			tempParams.ServersList = tempParams.TempServersList
