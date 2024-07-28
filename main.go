@@ -20,8 +20,11 @@ import (
 )
 
 const (
-	Version   = "0.0.6-07282024-0158"
-	UserAgent = "goFactServView" + "-" + Version
+	Version   = "0.0.7"
+	VDate     = "07282024-0324p"
+	ProgName  = "goFactServView"
+	UserAgent = ProgName + "-" + Version
+	VString   = ProgName + "v" + Version + " (" + VDate + ") "
 	CacheFile = "cache.json"
 
 	ReqTimeout      = time.Second * 5
@@ -49,8 +52,13 @@ func main() {
 	bindPort := flag.Int("port", 8080, "port to bind to for HTTP")
 	server := &http.Server{}
 	server.Addr = fmt.Sprintf("%v:%v", *bindIP, *bindPort)
-
+	getVersion := flag.Bool("version", false, "Get program version")
 	flag.Parse()
+
+	if *getVersion {
+		fmt.Println(VString)
+		return
+	}
 
 	if *sParam.Token == "" || *sParam.Username == "" {
 		errLog("You must supply a username and token. -h for help.")
@@ -230,6 +238,11 @@ func (ServData *ServerStateData) FetchServerList() {
 
 	ServData.LastRefresh = time.Now().UTC()
 	errLog("Fetched server list at %v", time.Now())
+
+	if len(ServData.TempServersList) <= MinValidCount {
+		return
+	}
+	ServData.ServersList = ServData.TempServersList
 	WriteServerList(ServData)
 }
 

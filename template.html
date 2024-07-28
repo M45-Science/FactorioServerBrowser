@@ -16,6 +16,30 @@
             /* Light text color */
         }
 
+        a:link {
+            color: rgb(78, 204, 226);
+            background-color: transparent;
+            text-decoration: none;
+        }
+
+        a:visited {
+            color: pink;
+            background-color: transparent;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: rgb(255, 102, 102);
+            background-color: transparent;
+            text-decoration: underline;
+        }
+
+        a:active {
+            color: yellow;
+            background-color: transparent;
+            text-decoration: underline;
+        }
+
         .container {
             max-width: 1200px;
             margin: 20px auto;
@@ -93,26 +117,15 @@
             margin-top: 20px;
         }
 
-        .form-container {
-            background: #333;
-            padding: 25px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px; /* Adjust the gap between form items as needed */
-            max-width: 800px; /* Max width to control the container's size */
-            width: 100%;
+        .search-container {
+            background: #3b3b3b;
+            margin: 20px;
+            padding: 20px;
+            width: min-content;
         }
 
-        .form-item {
-            flex: 1 1 calc(50% - 20px); /* Adjust for 2 columns with gap */
-            box-sizing: border-box;
-        }
-
-        .form-item input {
-            width: calc(100% - 20px); /* Full width minus padding */
-            padding: 8px;
+        .form-group {
             margin-bottom: 10px;
-            box-sizing: border-box;
         }
 
 
@@ -131,62 +144,56 @@
         .server-footer {
             transition: background-color 0.3s, color 0.3s;
         }
-
-        
     </style>
     <script>
-        // JavaScript to auto-refresh the page
-        function autoRefresh() {
-            setTimeout(function () {
-                window.location.reload();
-            }, 300000);
+        function goToUrl() {
+            const dropdown = document.getElementById('dropdown');
+            const textField = document.getElementById('textField');
+            const selectedOption = dropdown.value;
+            const tagValue = encodeURIComponent(textField.value.trim());
+
+            // Construct the URL with the tag value
+            const url = `?${selectedOption}=${tagValue}`;
+
+            // Redirect to the constructed URL
+            window.location.href = url;
         }
-        window.onload = autoRefresh;
     </script>
 </head>
 
 <body>
     <div class="container">
-        <h1>Factorio Server Listings</h1>
-        <p>{{ .UserAgent }}<br>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
-                href="https://m45sci.xyz">M45-Science</a></p>
-        {{ if .LastRefresh }}
-        <p>Last refreshed: {{ .LastRefresh.Format "2006-01-02 15:04:05 UTC" }}</p>
-        {{ end }}
-        Search:<br>
-        <div class="form-container">
-            <div class="form-item">
-                <form action="" method="get">
-                    <label for="query">Name:</label><br>
-                    <input type="text" name="name" required>
-                    <button type="submit">Go</button>
-                </form>
+        <div style="width: 100%; overflow: hidden;">
+            <div style="width: 50%; float: left;">
+                <h1>Factorio Server Listings</h1>
+                <p>{{ .UserAgent }}<br>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
+                        href="https://m45sci.xyz">M45-Science</a></p>
+                {{ if .LastRefresh }}
+                <p>Last refreshed: {{ .LastRefresh.Format "2006-01-02 15:04:05 UTC" }}</p>
+                {{ end }}
             </div>
+            <div style="margin-left: 50%">
+                <div class="search-container">
+                    <label for="form-group">Search:</label>
+                    <div class="form-group">
+                        <select id="dropdown">
+                            <option value="" disabled selected>Select type</option>
+                            <option value="tag">Tag</option>
+                            <option value="name">Name</option>
+                            <option value="description">Description</option>
+                            <option value="player">Player Name</option>
+                        </select>
+                    </div>
 
-            <div class="form-item">
-                <form action="" method="get">
-                    <label for="query">Description:</label><br>
-                    <input type="text" name="desc" required>
-                    <button type="submit">Go</button>
-                </form>
+                    <div class="form-group">
+                        <input type="text" id="textField" placeholder="M45">
+                    </div>
+
+                    <div class="form-group">
+                        <button onclick="goToUrl()">Search</button>
+                    </div>
+                </div>
             </div>
-
-            <div class="form-item">
-                <form action="" method="get">
-                    <label for="query">Tag:</label><br>
-                    <input type="text" name="tag" required>
-                    <button type="submit">Go</button>
-                </form>
-            </div>
-
-            <div class="form-item">
-                <form action="" method="get">
-                    <label for="query">Player:</label><br>
-                    <input type="text" name="player" required>
-                    <button type="submit">Go</button>
-                </form>
-            </div>
-
         </div>
         {{ range .ServersList }}
         <div class="server-item">

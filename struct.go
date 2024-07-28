@@ -43,5 +43,5 @@ type ServerStateData struct {
 	LastRefresh                 time.Time
 	LastAttempt                 time.Time
 
-	UserAgent string
+	UserAgent, Version string
 }
