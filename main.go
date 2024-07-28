@@ -48,12 +48,13 @@ func main() {
 	sParam.Username = flag.String("username", "", "Matchmaking API username")
 	sParam.NoFetch = flag.Bool("noFetch", false, "Never fetch the server list, for testing only.")
 	sParam.UserAgent = UserAgent
-	bindIP := flag.String("ip", "", "IP to bind to")
+	bindIP := flag.String("ip", "localhost", "IP to bind to")
 	bindPort := flag.Int("port", 8080, "port to bind to for HTTP")
-	server := &http.Server{}
-	server.Addr = fmt.Sprintf("%v:%v", *bindIP, *bindPort)
 	getVersion := flag.Bool("version", false, "Get program version")
 	flag.Parse()
+
+	server := &http.Server{}
+	server.Addr = fmt.Sprintf("%v:%v", *bindIP, *bindPort)
 
 	if *getVersion {
 		fmt.Println(VString)
@@ -161,6 +162,7 @@ func main() {
 			sp.FetchServerList()
 		}
 	}(sParam)
+
 	signalHandle := make(chan os.Signal, 1)
 	signal.Notify(signalHandle, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-signalHandle
