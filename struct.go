@@ -32,7 +32,9 @@ type ServerListItem struct {
 	Require_user_verification bool
 	Server_id                 string
 	Tags                      []string
-	ConnectURL                string
+
+	ConnectURL string
+	Position   int
 }
 
 type ServerStateData struct {
@@ -41,6 +43,10 @@ type ServerStateData struct {
 	ServersList                 []ServerListItem
 	LastRefresh                 time.Time
 	LastAttempt                 time.Time
+	ServersCount,
+	NumPages,
+	CurrentPage,
+	ItemsPerPage int
 
 	UserAgent, Version string
 }

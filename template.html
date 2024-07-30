@@ -158,6 +158,49 @@
             // Redirect to the constructed URL
             window.location.href = url;
         }
+
+        function goNextPage(maxPage) {
+            const currentUrl = new URL(window.location.href);
+            let pageParam = currentUrl.searchParams.get('page');
+            let currentPage;
+            if (pageParam === null || pageParam.trim() === '') {
+                currentPage = 1; // Default to page 1 if no page parameter
+            } else {
+                currentPage = parseInt(pageParam, 10);
+                if (isNaN(currentPage) || currentPage <= 0) {
+                    currentPage = 1;
+                }
+            }
+            const nextPage = Math.min(currentPage + 1, maxPage);
+
+            currentUrl.searchParams.set('page', nextPage);
+            window.location.href = currentUrl.toString();
+        }
+
+        function goPrevPage() {
+            const currentUrl = new URL(window.location.href);
+            let pageParam = currentUrl.searchParams.get('page');
+            let currentPage;
+            if (pageParam === null || pageParam.trim() === '') {
+                currentPage = 1; // Default to page 1 if no page parameter
+            } else {
+                currentPage = parseInt(pageParam, 10);
+                if (isNaN(currentPage) || currentPage <= 0) {
+                    currentPage = 1;
+                }
+            }
+            const nextPage = currentPage - 1;
+            currentUrl.searchParams.set('page', nextPage);
+            window.location.href = currentUrl.toString();
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const maxPage = {{.NumPages}};
+
+            document.querySelectorAll('.nextPageButton').forEach(button => {
+                button.addEventListener('click', () => goNextPage(maxPage));
+            })
+        });
     </script>
 </head>
 
@@ -174,7 +217,7 @@
             </div>
             <div style="margin-left: 50%">
                 <div class="search-container">
-                    <label for="form-group">Search:</label>
+                    Search:
                     <div class="form-group">
                         <select id="dropdown">
                             <option value="" disabled selected>Select type</option>
@@ -195,6 +238,9 @@
                 </div>
             </div>
         </div>
+        Servers: Total: {{ .ServersCount }}<br>
+        Page: {{ .CurrentPage }} / {{ .NumPages }} 
+        <button onclick="goPrevPage()"><</button>  <button class="nextPageButton">></button>
         {{ range .ServersList }}
         <div class="server-item">
             <div class="server-header">
@@ -259,6 +305,8 @@
         {{ else }}
         <p>No servers found.</p>
         {{ end }}
+        Page: {{ .CurrentPage }} / {{ .NumPages }} 
+        <button onclick="goPrevPage()"><</button>  <button class="nextPageButton">></button>
         <div class="server-footer">
             <p>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
                     href="https://m45sci.xyz">M45-Science</a></p>

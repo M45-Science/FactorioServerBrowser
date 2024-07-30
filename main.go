@@ -7,12 +7,14 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -20,8 +22,8 @@ import (
 )
 
 const (
-	Version   = "0.1.0"
-	VDate     = "07292024-1136p"
+	Version   = "0.1.1"
+	VDate     = "07302024-0323"
 	ProgName  = "goFactServView"
 	UserAgent = ProgName + "-" + Version
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
@@ -34,6 +36,7 @@ const (
 	BGFetchInterval = time.Hour * 3
 	//If we get less results than this, assume the data is incomplete or corrupt
 	MinValidCount = 25
+	ItemsPerPage  = 25
 )
 
 var (
@@ -75,20 +78,30 @@ func main() {
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if !strings.EqualFold(r.RequestURI, "/") && !strings.HasPrefix(r.RequestURI, "/?") {
+			http.Error(w, "404 not found.", http.StatusNotFound)
+			return
+		}
+
 		sParam.FetchServerList()
 		var tempParams *ServerStateData = &ServerStateData{
-			URL:         sParam.URL,
-			Query:       sParam.Query,
-			Token:       sParam.Token,
-			Username:    sParam.Username,
-			LastRefresh: sParam.LastRefresh,
-			LastAttempt: sParam.LastAttempt,
-			UserAgent:   sParam.UserAgent,
-			NoFetch:     sParam.NoFetch,
-			ServersList: sParam.ServersList,
+			URL:          sParam.URL,
+			Query:        sParam.Query,
+			Token:        sParam.Token,
+			Username:     sParam.Username,
+			LastRefresh:  sParam.LastRefresh,
+			LastAttempt:  sParam.LastAttempt,
+			UserAgent:    sParam.UserAgent,
+			NoFetch:      sParam.NoFetch,
+			ServersList:  sParam.ServersList,
+			ServersCount: sParam.ServersCount,
+			ItemsPerPage: ItemsPerPage,
 		}
 
 		tempServersList := []ServerListItem{}
+		page := 1
+
+		//errLog("Request: %v", r.RequestURI)
 
 		queryItems := r.URL.Query()
 		if len(queryItems) > 0 {
@@ -101,7 +114,14 @@ func main() {
 				if values[0] == "" {
 					continue
 				}
-				if strings.EqualFold(key, "name") {
+				if strings.EqualFold(key, "page") {
+					val, err := strconv.ParseUint(values[0], 10, 64)
+					if err != nil {
+						continue
+					} else {
+						page = int(val)
+					}
+				} else if strings.EqualFold(key, "name") {
 					for s, server := range tempParams.ServersList {
 						lName := strings.ToLower(server.Name)
 						lVal := strings.ToLower(values[0])
@@ -149,8 +169,10 @@ func main() {
 			}
 			if found {
 				tempParams.ServersList = sortServers(tempServersList)
+				tempParams.ServersCount = len(tempServersList)
 			}
 		}
+		paginateList(page, tempParams)
 		err := tmpl.Execute(w, tempParams)
 
 		if err != nil {
@@ -172,6 +194,33 @@ func main() {
 	signalHandle := make(chan os.Signal, 1)
 	signal.Notify(signalHandle, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-signalHandle
+}
+
+func paginateList(page int, tempParams *ServerStateData) {
+	if page < 1 {
+		page = 1
+	}
+	pageStart := (page - 1) * ItemsPerPage
+	pageEnd := page * ItemsPerPage
+	tempServerList := []ServerListItem{}
+
+	if pageEnd > tempParams.ServersCount {
+		pageEnd = tempParams.ServersCount
+	}
+	if pageStart > tempParams.ServersCount {
+		pageStart = tempParams.ServersCount - tempParams.ItemsPerPage
+	}
+	if pageStart < 0 {
+		return
+	}
+
+	for c := pageStart; c < pageEnd; c++ {
+		tempParams.ServersList[c].Position = c + 1
+		tempServerList = append(tempServerList, tempParams.ServersList[c])
+	}
+	tempParams.ServersList = tempServerList
+	tempParams.CurrentPage = page
+	tempParams.NumPages = int(math.Ceil(float64(tempParams.ServersCount)/float64(tempParams.ItemsPerPage)) + 1)
 }
 
 var FetchLock sync.Mutex
@@ -251,6 +300,7 @@ func (ServData *ServerStateData) FetchServerList() {
 		return
 	}
 	ServData.ServersList = tempServerList
+	ServData.ServersCount = len(tempServerList)
 	WriteServerList(ServData)
 }
 
