@@ -121,7 +121,7 @@ func main() {
 					} else {
 						page = int(val)
 					}
-				} else if strings.EqualFold(key, "name") {
+				} else if !found && strings.EqualFold(key, "name") {
 					for s, server := range tempParams.ServersList {
 						lName := strings.ToLower(server.Name)
 						lVal := strings.ToLower(values[0])
@@ -130,8 +130,7 @@ func main() {
 						}
 					}
 					found = true
-					break
-				} else if strings.EqualFold(key, "desc") {
+				} else if !found && strings.EqualFold(key, "desc") {
 					for s, server := range tempParams.ServersList {
 						lDesc := strings.ToLower(server.Description)
 						lVal := strings.ToLower(values[0])
@@ -140,8 +139,7 @@ func main() {
 						}
 					}
 					found = true
-					break
-				} else if strings.EqualFold(key, "tag") {
+				} else if !found && strings.EqualFold(key, "tag") {
 					for s, server := range tempParams.ServersList {
 						for _, tag := range server.Tags {
 							if strings.EqualFold(values[0], tag) {
@@ -151,8 +149,7 @@ func main() {
 						}
 					}
 					found = true
-					break
-				} else if strings.EqualFold(key, "player") {
+				} else if !found && strings.EqualFold(key, "player") {
 					for s, server := range tempParams.ServersList {
 						for _, player := range server.Players {
 							lPlayer := strings.ToLower(player)
@@ -164,7 +161,6 @@ func main() {
 						}
 					}
 					found = true
-					break
 				}
 			}
 			if found {
@@ -220,7 +216,7 @@ func paginateList(page int, tempParams *ServerStateData) {
 	}
 	tempParams.ServersList = tempServerList
 	tempParams.CurrentPage = page
-	tempParams.NumPages = int(math.Ceil(float64(tempParams.ServersCount)/float64(tempParams.ItemsPerPage)) + 1)
+	tempParams.NumPages = int(math.Ceil(float64(tempParams.ServersCount) / float64(tempParams.ItemsPerPage)))
 }
 
 var FetchLock sync.Mutex
