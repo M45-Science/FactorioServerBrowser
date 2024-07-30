@@ -161,17 +161,9 @@
 
         function goNextPage(maxPage) {
             const currentUrl = new URL(window.location.href);
-            let pageParam = currentUrl.searchParams.get('page');
-            let currentPage;
-            if (pageParam === null || pageParam.trim() === '') {
-                currentPage = 1; // Default to page 1 if no page parameter
-            } else {
-                currentPage = parseInt(pageParam, 10);
-                if (isNaN(currentPage) || currentPage <= 0) {
-                    currentPage = 1;
-                }
-            }
-            const nextPage = currentPage + 1
+            let currentPage = {{ .CurrentPage }};
+
+            const nextPage = currentPage + 1;
 
             if (nextPage <= maxPage) {
                 currentUrl.searchParams.set('page', nextPage);
@@ -181,16 +173,8 @@
 
         function goPrevPage() {
             const currentUrl = new URL(window.location.href);
-            let pageParam = currentUrl.searchParams.get('page');
-            let currentPage;
-            if (pageParam === null || pageParam.trim() === '') {
-                currentPage = 1; // Default to page 1 if no page parameter
-            } else {
-                currentPage = parseInt(pageParam, 10);
-                if (isNaN(currentPage) || currentPage <= 0) {
-                    currentPage = 1;
-                }
-            }
+            let currentPage = {{ .CurrentPage }};
+
             const nextPage = currentPage - 1;
             if (nextPage > 0) {
                 currentUrl.searchParams.set('page', nextPage);

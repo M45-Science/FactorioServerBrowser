@@ -215,8 +215,14 @@ func paginateList(page int, tempParams *ServerStateData) {
 		tempServerList = append(tempServerList, tempParams.ServersList[c])
 	}
 	tempParams.ServersList = tempServerList
-	tempParams.CurrentPage = page
 	tempParams.NumPages = int(math.Ceil(float64(tempParams.ServersCount) / float64(tempParams.ItemsPerPage)))
+	if page > tempParams.NumPages {
+		tempParams.CurrentPage = tempParams.NumPages
+	} else if page < 1 {
+		tempParams.CurrentPage = 0
+	} else {
+		tempParams.CurrentPage = page
+	}
 }
 
 var FetchLock sync.Mutex
