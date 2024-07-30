@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	Version   = "0.0.8"
-	VDate     = "07282024-0437p"
+	Version   = "0.1.0"
+	VDate     = "07292024-1136p"
 	ProgName  = "goFactServView"
 	UserAgent = ProgName + "-" + Version
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
@@ -77,16 +77,19 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		sParam.FetchServerList()
 		var tempParams *ServerStateData = &ServerStateData{
-			URL:             sParam.URL,
-			Query:           sParam.Query,
-			Token:           sParam.Token,
-			Username:        sParam.Username,
-			LastRefresh:     sParam.LastRefresh,
-			LastAttempt:     sParam.LastAttempt,
-			UserAgent:       sParam.UserAgent,
-			NoFetch:         sParam.NoFetch,
-			TempServersList: sParam.TempServersList,
+			URL:         sParam.URL,
+			Query:       sParam.Query,
+			Token:       sParam.Token,
+			Username:    sParam.Username,
+			LastRefresh: sParam.LastRefresh,
+			LastAttempt: sParam.LastAttempt,
+			UserAgent:   sParam.UserAgent,
+			NoFetch:     sParam.NoFetch,
+			ServersList: sParam.ServersList,
 		}
+
+		tempServersList := []ServerListItem{}
+
 		queryItems := r.URL.Query()
 		if len(queryItems) > 0 {
 			//errLog("Query: %v", queryItems)
@@ -95,31 +98,34 @@ func main() {
 				if len(key) == 0 || len(values) == 0 {
 					continue
 				}
+				if values[0] == "" {
+					continue
+				}
 				if strings.EqualFold(key, "name") {
-					for s, server := range tempParams.TempServersList {
-						lName := strings.ToLower(server.Description)
+					for s, server := range tempParams.ServersList {
+						lName := strings.ToLower(server.Name)
 						lVal := strings.ToLower(values[0])
 						if strings.Contains(lName, lVal) {
-							tempParams.ServersList = append(tempParams.ServersList, tempParams.TempServersList[s])
+							tempServersList = append(tempServersList, tempParams.ServersList[s])
 						}
 					}
 					found = true
 					break
 				} else if strings.EqualFold(key, "desc") {
-					for s, server := range tempParams.TempServersList {
+					for s, server := range tempParams.ServersList {
 						lDesc := strings.ToLower(server.Description)
 						lVal := strings.ToLower(values[0])
 						if strings.Contains(lDesc, lVal) {
-							tempParams.ServersList = append(tempParams.ServersList, tempParams.TempServersList[s])
+							tempServersList = append(tempServersList, tempParams.ServersList[s])
 						}
 					}
 					found = true
 					break
 				} else if strings.EqualFold(key, "tag") {
-					for s, server := range tempParams.TempServersList {
+					for s, server := range tempParams.ServersList {
 						for _, tag := range server.Tags {
 							if strings.EqualFold(values[0], tag) {
-								tempParams.ServersList = append(tempParams.ServersList, tempParams.TempServersList[s])
+								tempServersList = append(tempServersList, tempParams.ServersList[s])
 								break
 							}
 						}
@@ -127,12 +133,12 @@ func main() {
 					found = true
 					break
 				} else if strings.EqualFold(key, "player") {
-					for s, server := range tempParams.TempServersList {
+					for s, server := range tempParams.ServersList {
 						for _, player := range server.Players {
 							lPlayer := strings.ToLower(player)
 							lVal := strings.ToLower(values[0])
 							if strings.Contains(lPlayer, lVal) {
-								tempParams.ServersList = append(tempParams.ServersList, tempParams.TempServersList[s])
+								tempServersList = append(tempServersList, tempParams.ServersList[s])
 								break
 							}
 						}
@@ -142,13 +148,8 @@ func main() {
 				}
 			}
 			if found {
-				tempParams.ServersList = sortServers(tempParams.ServersList)
-			} else {
-				tempParams.ServersList = tempParams.TempServersList
+				tempParams.ServersList = sortServers(tempServersList)
 			}
-		} else {
-			//errLog("Not a query")
-			tempParams.ServersList = tempParams.TempServersList
 		}
 		err := tmpl.Execute(w, tempParams)
 
@@ -241,15 +242,15 @@ func (ServData *ServerStateData) FetchServerList() {
 		}
 		tempServerList[i].Modded = item.Mod_count > 0
 	}
-	ServData.TempServersList = sortServers(tempServerList)
+	tempServerList = sortServers(tempServerList)
 
 	ServData.LastRefresh = time.Now().UTC()
 	errLog("Fetched server list at %v", time.Now())
 
-	if len(ServData.TempServersList) <= MinValidCount {
+	if len(tempServerList) <= MinValidCount {
 		return
 	}
-	ServData.ServersList = ServData.TempServersList
+	ServData.ServersList = tempServerList
 	WriteServerList(ServData)
 }
 

@@ -33,7 +33,7 @@ func ReadServerList(ServState *ServerStateData) {
 			}
 
 			if len(tempServerList) > MinValidCount {
-				ServState.TempServersList = tempServerList
+				ServState.ServersList = sortServers(tempServerList)
 				ServState.LastRefresh = lastRefresh
 				errLog("Read cached server list.")
 			}

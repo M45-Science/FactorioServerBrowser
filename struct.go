@@ -38,7 +38,6 @@ type ServerListItem struct {
 type ServerStateData struct {
 	URL, Query, Token, Username *string
 	NoFetch                     *bool
-	TempServersList             []ServerListItem
 	ServersList                 []ServerListItem
 	LastRefresh                 time.Time
 	LastAttempt                 time.Time
