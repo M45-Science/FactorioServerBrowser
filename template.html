@@ -227,8 +227,10 @@
             </div>
         </div>
         Matches found: {{ .ServersCount }}<br>
+        {{ if  .ServersCount }}
         Page: {{ .CurrentPage }} / {{ .NumPages }}
         <button onclick="goPrevPage()"><</button> <button class="nextPageButton">></button>
+        {{ end }}
         {{ range .ServersList }}
         <div class="server-item">
             <div class="server-header">
@@ -291,15 +293,15 @@
                 {{ end }}
             </div>
         </div>
-        {{ else }}
-        <p>No servers found.</p>
         {{ end }}
+        {{ if  .ServersCount }}
         Page: {{ .CurrentPage }} / {{ .NumPages }}
         <button onclick="goPrevPage()"><</button> <button class="nextPageButton">></button>
         <div class="server-footer">
             <p>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
                     href="https://m45sci.xyz">M45-Science</a></p>
         </div>
+        {{ end }}
     </div>
 </body>
 
