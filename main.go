@@ -60,6 +60,7 @@ func redirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	defer time.Sleep(time.Second * 2)
 	sParam = ServerStateData{}
 	sParam.URL = flag.String("url", "multiplayer.factorio.com", "domain name to query")
 	sParam.Token = flag.String("token", "", "Matchmaking API token")
