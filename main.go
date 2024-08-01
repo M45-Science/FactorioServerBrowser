@@ -203,11 +203,11 @@ func httpsHandler(w http.ResponseWriter, r *http.Request) {
 	tempServersList := []ServerListItem{}
 	page := 1
 
-	//errLog("Request: %v", r.RequestURI)
+	cwlog.DoLog(false, "Request: %v", r.RequestURI)
 
 	queryItems := r.URL.Query()
 	if len(queryItems) > 0 {
-		//errLog("Query: %v", queryItems)
+		//cwlog.DoLog(false, "Query: %v", queryItems)
 		found := false
 		for key, values := range queryItems {
 			if len(key) == 0 || len(values) == 0 {
