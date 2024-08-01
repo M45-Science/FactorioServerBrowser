@@ -24,8 +24,8 @@ import (
 )
 
 const (
-	Version   = "0.1.4"
-	VDate     = "07312024-0745p"
+	Version   = "0.1.5"
+	VDate     = "07312024-0958p"
 	ProgName  = "goFactServView"
 	UserAgent = ProgName + "-" + Version
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
@@ -50,9 +50,10 @@ var (
 	bindPortHTTPS *int
 	bindPortHTTP  *int
 
-	rega   *regexp.Regexp = regexp.MustCompile(`\[/[^][]+\]`)
-	regb   *regexp.Regexp = regexp.MustCompile(`\[(.*?)=(.*?)\]`)
-	tUnits durafmt.Units
+	rega       *regexp.Regexp = regexp.MustCompile(`\[/[^][]+\]`)
+	regb       *regexp.Regexp = regexp.MustCompile(`\[(.*?)=(.*?)\]`)
+	tUnits     durafmt.Units
+	fileServer http.Handler
 )
 
 func main() {
@@ -98,6 +99,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	/* Download server */
+	fileServer = http.FileServer(http.Dir("www"))
 
 	//Refresh cache infrequently
 	go func() {
@@ -181,8 +185,9 @@ func httpsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		return
 	}
+
 	if !strings.EqualFold(r.RequestURI, "/") && !strings.HasPrefix(r.RequestURI, "/?") {
-		http.Error(w, "404 not found.", http.StatusNotFound)
+		fileServer.ServeHTTP(w, r)
 		return
 	}
 

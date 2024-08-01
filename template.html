@@ -163,23 +163,23 @@
             const currentUrl = new URL(window.location.href);
             let currentPage = {{ .CurrentPage }};
 
-            const nextPage = currentPage + 1;
+        const nextPage = currentPage + 1;
 
-            if (nextPage <= maxPage) {
-                currentUrl.searchParams.set('page', nextPage);
-                window.location.href = currentUrl.toString();
-            }
+        if (nextPage <= maxPage) {
+            currentUrl.searchParams.set('page', nextPage);
+            window.location.href = currentUrl.toString();
+        }
         }
 
         function goPrevPage() {
             const currentUrl = new URL(window.location.href);
             let currentPage = {{ .CurrentPage }};
 
-            const nextPage = currentPage - 1;
-            if (nextPage > 0) {
-                currentUrl.searchParams.set('page', nextPage);
-                window.location.href = currentUrl.toString();
-            }
+        const nextPage = currentPage - 1;
+        if (nextPage > 0) {
+            currentUrl.searchParams.set('page', nextPage);
+            window.location.href = currentUrl.toString();
+        }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -198,17 +198,16 @@
             <div style="width: 50%; float: left;">
                 <h1>Factorio Server Listings</h1>
                 <p>{{ .UserAgent }}<br>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
-                        href="https://m45sci.xyz">M45-Science</a></p>
-                {{ if .LastRefresh }}
-                <p>Last refreshed: {{ .LastRefresh.Format "2006-01-02 15:04:05 UTC" }}</p>
-                {{ end }}
+                        href="https://m45sci.xyz">M45-Science</a><br>
+                    <a href="changelog.html">Changelog</a><br>
+                </p>
             </div>
             <div style="margin-left: 50%">
                 <div class="search-container">
                     Search:
                     <div class="form-group">
                         <select id="dropdown">
-                            <option value="" disabled selected>Select type</option>
+                            <option value="" disabled selected>Search type</option>
                             <option value="tag">Tag</option>
                             <option value="name">Name</option>
                             <option value="desc">Description</option>
@@ -227,81 +226,85 @@
             </div>
         </div>
         Matches found: {{ .ServersCount }}<br>
-        {{ if  .ServersCount }}
+        {{ if .LastRefresh }}
+        Last refreshed: {{ .LastRefresh.Format "2006-01-02 15:04:05 UTC" }}<br>
+        {{ end }}
+        <br>
+        {{ if .ServersCount }}
         Page: {{ .CurrentPage }} / {{ .NumPages }}
         <button onclick="goPrevPage()"><</button> <button class="nextPageButton">></button>
-        {{ end }}
-        {{ range .ServersList }}
-        <div class="server-item">
-            <div class="server-header">
-                <h2 class="server-title">{{ .Name }} </h2>
-                <div class="server-meta">
-                    <a href="{{ .ConnectURL }}">(quick connect)</a><br>
-                    {{ if len .Players }}
-                    <span>Players: {{ len .Players }} / {{ .Max_players }}</span><br>
-                    {{ else }}
-                    <span>Players: None</span><br>
-                    {{ end }}
+                {{ end }}
+                {{ range .ServersList }}
+                <div class="server-item">
+                    <div class="server-header">
+                        <h2 class="server-title">{{ .Name }} </h2>
+                        <div class="server-meta">
+                            <a href="{{ .ConnectURL }}">(quick connect)</a><br>
+                            {{ if len .Players }}
+                            <span>Players: {{ len .Players }} / {{ .Max_players }}</span><br>
+                            {{ else }}
+                            <span>Players: None</span><br>
+                            {{ end }}
 
-                    {{ if .Has_password }}
-                    <span>Has Password</span><br>
-                    {{ end }}
+                            {{ if .Has_password }}
+                            <span>Has Password</span><br>
+                            {{ end }}
 
-                    <span>Version: {{ .Application_version.Game_version }}</span><br>
-                    <span>Time: {{ .Time }}</span><br>
-                    {{ if .Modded }}
-                    <span>Mods Installed: {{ .Mod_count }}</span>
-                    {{ end }}
+                            <span>Version: {{ .Application_version.Game_version }}</span><br>
+                            <span>Time: {{ .Time }}</span><br>
+                            {{ if .Modded }}
+                            <span>Mods Installed: {{ .Mod_count }}</span>
+                            {{ end }}
+                        </div>
+                    </div>
+                    <div class="server-details">
+                        {{ if .Description }}
+                        <p><strong>Description:</strong></p>
+                        <ul class="desc">
+                            <li>{{ .Description }}</li>
+                        </ul>
+                        {{ end }}
+                        {{ if .Mods }}
+                        <p><strong>Mods:</strong></p>
+                        <ul class="mod-list">
+                            <li>
+                                {{ range .Mods }}
+                                {{ .Name }} v{{ .Version }},
+                                {{ end }}
+                            </li>
+                        </ul>
+                        {{ end }}
+                        {{ if .Players }}
+                        <p><strong>Players:</strong></p>
+                        <ul class="player-list">
+                            <li>
+                                {{ range .Players }}
+                                {{ . }},
+                                {{ end }}
+                            </li>
+                        </ul>
+                        {{ end }}
+                        {{ if .Tags }}
+                        <p><strong>Tags:</strong></p>
+                        <ul class="tag-list">
+                            <li>
+                                {{ range .Tags }}
+                                {{ . }},
+                                {{ end }}
+                            </li>
+                        </ul>
+                        {{ end }}
+                    </div>
                 </div>
-            </div>
-            <div class="server-details">
-                {{ if .Description }}
-                <p><strong>Description:</strong></p>
-                <ul class="desc">
-                    <li>{{ .Description }}</li>
-                </ul>
                 {{ end }}
-                {{ if .Mods }}
-                <p><strong>Mods:</strong></p>
-                <ul class="mod-list">
-                    <li>
-                        {{ range .Mods }}
-                        {{ .Name }} v{{ .Version }},
+                {{ if .ServersCount }}
+                Page: {{ .CurrentPage }} / {{ .NumPages }}
+                <button onclick="goPrevPage()"><</button> <button class="nextPageButton">></button>
+                        <div class="server-footer">
+                            <p>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
+                                    href="https://m45sci.xyz">M45-Science</a></p>
+                        </div>
                         {{ end }}
-                    </li>
-                </ul>
-                {{ end }}
-                {{ if .Players }}
-                <p><strong>Players:</strong></p>
-                <ul class="player-list">
-                    <li>
-                        {{ range .Players }}
-                        {{ . }},
-                        {{ end }}
-                    </li>
-                </ul>
-                {{ end }}
-                {{ if .Tags }}
-                <p><strong>Tags:</strong></p>
-                <ul class="tag-list">
-                    <li>
-                        {{ range .Tags }}
-                        {{ . }},
-                        {{ end }}
-                    </li>
-                </ul>
-                {{ end }}
-            </div>
-        </div>
-        {{ end }}
-        {{ if  .ServersCount }}
-        Page: {{ .CurrentPage }} / {{ .NumPages }}
-        <button onclick="goPrevPage()"><</button> <button class="nextPageButton">></button>
-        <div class="server-footer">
-            <p>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
-                    href="https://m45sci.xyz">M45-Science</a></p>
-        </div>
-        {{ end }}
     </div>
 </body>
 
