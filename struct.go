@@ -35,11 +35,11 @@ type ServerListItem struct {
 
 	ConnectURL string
 	Position   int
+	Time       string
 }
 
 type ServerStateData struct {
 	URL, Query, Token, Username *string
-	NoFetch                     *bool
 	ServersList                 []ServerListItem
 	LastRefresh                 time.Time
 	LastAttempt                 time.Time

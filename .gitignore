@@ -1,3 +1,5 @@
 goFactServView
 go.sh
 cache.json
+*.pem
+log

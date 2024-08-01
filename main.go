@@ -1,9 +1,11 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"goFactServView/cwlog"
 	"html/template"
 	"io"
 	"log"
@@ -11,19 +13,19 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/signal"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
+
+	"github.com/hako/durafmt"
 )
 
 const (
-	Version   = "0.1.1"
-	VDate     = "07302024-0323"
+	Version   = "0.1.3"
+	VDate     = "07312024-1202p"
 	ProgName  = "goFactServView"
 	UserAgent = ProgName + "-" + Version
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
@@ -32,6 +34,7 @@ const (
 	ReqTimeout      = time.Second * 5
 	ReqThrottle     = time.Second * 15
 	RefreshInterval = time.Minute * 5
+	ServerTimeout   = 10 * time.Second
 
 	BGFetchInterval = time.Hour * 3
 	//If we get less results than this, assume the data is incomplete or corrupt
@@ -40,156 +43,242 @@ const (
 )
 
 var (
-	rega *regexp.Regexp = regexp.MustCompile(`\[/[^][]+\]`)
-	regb *regexp.Regexp = regexp.MustCompile(`\[(.*?)=(.*?)\]`)
+	sParam ServerStateData
+	tmpl   *template.Template
+
+	bindIP        *string
+	bindPortHTTPS *int
+	bindPortHTTP  *int
+
+	rega   *regexp.Regexp = regexp.MustCompile(`\[/[^][]+\]`)
+	regb   *regexp.Regexp = regexp.MustCompile(`\[(.*?)=(.*?)\]`)
+	tUnits durafmt.Units
 )
 
+func redirect(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
+}
+
 func main() {
-	var sParam *ServerStateData = &ServerStateData{}
+	sParam = ServerStateData{}
 	sParam.URL = flag.String("url", "multiplayer.factorio.com", "domain name to query")
 	sParam.Token = flag.String("token", "", "Matchmaking API token")
 	sParam.Username = flag.String("username", "", "Matchmaking API username")
-	sParam.NoFetch = flag.Bool("noFetch", false, "Never fetch the server list, for testing only.")
-	sParam.UserAgent = UserAgent
-	bindIP := flag.String("ip", "localhost", "IP to bind to")
-	bindPort := flag.Int("port", 8080, "port to bind to for HTTP")
-	getVersion := flag.Bool("version", false, "Get program version")
+
+	bindIP = flag.String("ip", "", "IP to bind to")
+	bindPortHTTPS = flag.Int("httpsPort", 443, "port to bind to for HTTPS")
+	bindPortHTTP = flag.Int("httpPort", 80, "port to bind to")
+
 	flag.Parse()
 
-	server := &http.Server{}
-	server.Addr = fmt.Sprintf("%v:%v", *bindIP, *bindPort)
-
-	if *getVersion {
-		fmt.Println(VString)
-		return
-	}
-
 	if *sParam.Token == "" || *sParam.Username == "" {
-		errLog("You must supply a username and token. -h for help.")
+		cwlog.DoLog(false, "You must supply a username and token. -h for help.")
 		os.Exit(1)
 		return
 	}
 
-	ReadServerList(sParam)
-
-	tmpl, err := template.ParseFiles("template.html")
+	var err error
+	tUnits, err = durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
 	if err != nil {
 		panic(err)
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if !strings.EqualFold(r.RequestURI, "/") && !strings.HasPrefix(r.RequestURI, "/?") {
-			http.Error(w, "404 not found.", http.StatusNotFound)
-			return
+	cwlog.StartLog()
+	cwlog.LogDaemon()
+
+	go func() {
+		buf := fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTP)
+		if err := http.ListenAndServe(buf, http.HandlerFunc(redirect)); err != nil {
+			log.Fatalf("ListenAndServe error: %v", err)
 		}
+	}()
 
-		sParam.FetchServerList()
-		var tempParams *ServerStateData = &ServerStateData{
-			URL:          sParam.URL,
-			Query:        sParam.Query,
-			Token:        sParam.Token,
-			Username:     sParam.Username,
-			LastRefresh:  sParam.LastRefresh,
-			LastAttempt:  sParam.LastAttempt,
-			UserAgent:    sParam.UserAgent,
-			NoFetch:      sParam.NoFetch,
-			ServersList:  sParam.ServersList,
-			ServersCount: sParam.ServersCount,
-			ItemsPerPage: ItemsPerPage,
-		}
+	//Read server cache
+	ReadServerList()
 
-		tempServersList := []ServerListItem{}
-		page := 1
-
-		//errLog("Request: %v", r.RequestURI)
-
-		queryItems := r.URL.Query()
-		if len(queryItems) > 0 {
-			//errLog("Query: %v", queryItems)
-			found := false
-			for key, values := range queryItems {
-				if len(key) == 0 || len(values) == 0 {
-					continue
-				}
-				if values[0] == "" {
-					continue
-				}
-				if strings.EqualFold(key, "page") {
-					val, err := strconv.ParseUint(values[0], 10, 64)
-					if err != nil {
-						continue
-					} else {
-						page = int(val)
-					}
-				} else if !found && strings.EqualFold(key, "name") {
-					for s, server := range tempParams.ServersList {
-						lName := strings.ToLower(server.Name)
-						lVal := strings.ToLower(values[0])
-						if strings.Contains(lName, lVal) {
-							tempServersList = append(tempServersList, tempParams.ServersList[s])
-						}
-					}
-					found = true
-				} else if !found && strings.EqualFold(key, "desc") {
-					for s, server := range tempParams.ServersList {
-						lDesc := strings.ToLower(server.Description)
-						lVal := strings.ToLower(values[0])
-						if strings.Contains(lDesc, lVal) {
-							tempServersList = append(tempServersList, tempParams.ServersList[s])
-						}
-					}
-					found = true
-				} else if !found && strings.EqualFold(key, "tag") {
-					for s, server := range tempParams.ServersList {
-						for _, tag := range server.Tags {
-							if strings.EqualFold(values[0], tag) {
-								tempServersList = append(tempServersList, tempParams.ServersList[s])
-								break
-							}
-						}
-					}
-					found = true
-				} else if !found && strings.EqualFold(key, "player") {
-					for s, server := range tempParams.ServersList {
-						for _, player := range server.Players {
-							lPlayer := strings.ToLower(player)
-							lVal := strings.ToLower(values[0])
-							if strings.Contains(lPlayer, lVal) {
-								tempServersList = append(tempServersList, tempParams.ServersList[s])
-								break
-							}
-						}
-					}
-					found = true
-				}
-			}
-			if found {
-				tempParams.ServersList = sortServers(tempServersList)
-				tempParams.ServersCount = len(tempServersList)
-			}
-		}
-		paginateList(page, tempParams)
-		err := tmpl.Execute(w, tempParams)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
-
-	// Start the server
-	server.ListenAndServe()
+	//Parse template
+	tmpl, err = template.ParseFiles("template.html")
+	if err != nil {
+		panic(err)
+	}
 
 	//Refresh cache infrequently
-	go func(sp *ServerStateData) {
+	go func() {
 		for {
 			time.Sleep(BGFetchInterval)
-			sp.FetchServerList()
+			FetchServerList()
 		}
-	}(sParam)
+	}()
 
-	signalHandle := make(chan os.Signal, 1)
-	signal.Notify(signalHandle, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-signalHandle
+	/* Load certificates */
+	cert, err := tls.LoadX509KeyPair("fullchain.pem", "privkey.pem")
+	if err != nil {
+		cwlog.DoLog(true, "Error loading TLS key pair: %v (fullchain.pem, privkey.pem)", err)
+		return
+	}
+	cwlog.DoLog(true, "Loaded certs.")
+
+	/* HTTPS server */
+	http.HandleFunc("/", httpsHandler)
+
+	/* Create TLS configuration */
+	config := &tls.Config{
+		Certificates:       []tls.Certificate{cert},
+		InsecureSkipVerify: false,
+	}
+
+	/* Create HTTPS server */
+	server := &http.Server{
+		Addr:         fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTPS),
+		Handler:      http.DefaultServeMux,
+		TLSConfig:    config,
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+
+		ReadTimeout:  ServerTimeout,
+		WriteTimeout: ServerTimeout,
+		IdleTimeout:  ServerTimeout,
+	}
+
+	go func() {
+		for {
+			time.Sleep(time.Minute)
+
+			filePath := "fullchain.pem"
+			initialStat, erra := os.Stat(filePath)
+
+			if erra != nil {
+				continue
+			}
+
+			for initialStat != nil {
+				time.Sleep(time.Minute)
+
+				stat, errb := os.Stat(filePath)
+				if errb != nil {
+					break
+				}
+
+				if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
+					cwlog.DoLog(true, "Cert updated, closing.")
+					time.Sleep(time.Second * 5)
+					os.Exit(0)
+					break
+				}
+			}
+
+		}
+	}()
+
+	// Start server
+	cwlog.DoLog(true, "Starting server...")
+	err = server.ListenAndServeTLS("", "")
+	if err != nil {
+		cwlog.DoLog(true, "ListenAndServeTLS: %v", err)
+		panic(err)
+	}
+
+	cwlog.DoLog(true, "Goodbye.")
+}
+
+func httpsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		return
+	}
+	if !strings.EqualFold(r.RequestURI, "/") && !strings.HasPrefix(r.RequestURI, "/?") {
+		http.Error(w, "404 not found.", http.StatusNotFound)
+		return
+	}
+
+	FetchServerList()
+	var tempParams *ServerStateData = &ServerStateData{
+		URL:          sParam.URL,
+		Query:        sParam.Query,
+		Token:        sParam.Token,
+		Username:     sParam.Username,
+		LastRefresh:  sParam.LastRefresh,
+		LastAttempt:  sParam.LastAttempt,
+		UserAgent:    sParam.UserAgent,
+		ServersList:  sParam.ServersList,
+		ServersCount: sParam.ServersCount,
+		ItemsPerPage: ItemsPerPage,
+	}
+
+	tempServersList := []ServerListItem{}
+	page := 1
+
+	//errLog("Request: %v", r.RequestURI)
+
+	queryItems := r.URL.Query()
+	if len(queryItems) > 0 {
+		//errLog("Query: %v", queryItems)
+		found := false
+		for key, values := range queryItems {
+			if len(key) == 0 || len(values) == 0 {
+				continue
+			}
+			if values[0] == "" {
+				continue
+			}
+			if strings.EqualFold(key, "page") {
+				val, err := strconv.ParseUint(values[0], 10, 64)
+				if err != nil {
+					continue
+				} else {
+					page = int(val)
+				}
+			} else if !found && strings.EqualFold(key, "name") {
+				for s, server := range tempParams.ServersList {
+					lName := strings.ToLower(server.Name)
+					lVal := strings.ToLower(values[0])
+					if strings.Contains(lName, lVal) {
+						tempServersList = append(tempServersList, tempParams.ServersList[s])
+					}
+				}
+				found = true
+			} else if !found && strings.EqualFold(key, "desc") {
+				for s, server := range tempParams.ServersList {
+					lDesc := strings.ToLower(server.Description)
+					lVal := strings.ToLower(values[0])
+					if strings.Contains(lDesc, lVal) {
+						tempServersList = append(tempServersList, tempParams.ServersList[s])
+					}
+				}
+				found = true
+			} else if !found && strings.EqualFold(key, "tag") {
+				for s, server := range tempParams.ServersList {
+					for _, tag := range server.Tags {
+						if strings.EqualFold(values[0], tag) {
+							tempServersList = append(tempServersList, tempParams.ServersList[s])
+							break
+						}
+					}
+				}
+				found = true
+			} else if !found && strings.EqualFold(key, "player") {
+				for s, server := range tempParams.ServersList {
+					for _, player := range server.Players {
+						lPlayer := strings.ToLower(player)
+						lVal := strings.ToLower(values[0])
+						if strings.Contains(lPlayer, lVal) {
+							tempServersList = append(tempServersList, tempParams.ServersList[s])
+							break
+						}
+					}
+				}
+				found = true
+			}
+		}
+		if found {
+			tempParams.ServersList = sortServers(tempServersList)
+			tempParams.ServersCount = len(tempServersList)
+		}
+	}
+	paginateList(page, tempParams)
+	err := tmpl.Execute(w, tempParams)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func paginateList(page int, tempParams *ServerStateData) {
@@ -227,34 +316,30 @@ func paginateList(page int, tempParams *ServerStateData) {
 
 var FetchLock sync.Mutex
 
-func (ServData *ServerStateData) FetchServerList() {
-
-	if *ServData.NoFetch {
-		return
-	}
+func FetchServerList() {
 
 	FetchLock.Lock()
 	defer FetchLock.Unlock()
 
-	if time.Since(ServData.LastRefresh) < RefreshInterval {
+	if time.Since(sParam.LastRefresh) < RefreshInterval {
 		return
 	}
 
-	if time.Since(ServData.LastAttempt) < ReqThrottle {
+	if time.Since(sParam.LastAttempt) < ReqThrottle {
 		return
 	}
 
-	ServData.LastAttempt = time.Now().UTC()
+	sParam.LastAttempt = time.Now().UTC()
 
 	hClient := http.Client{
 		Timeout: ReqTimeout,
 	}
 
 	params := url.Values{}
-	params.Add("username", *ServData.Username)
-	params.Add("token", *ServData.Token)
+	params.Add("username", *sParam.Username)
+	params.Add("token", *sParam.Token)
 
-	urlBuf := "https://" + *ServData.URL + "/get-games?" + params.Encode()
+	urlBuf := "https://" + *sParam.URL + "/get-games?" + params.Encode()
 
 	req, err := http.NewRequest(http.MethodGet, urlBuf, nil)
 	if err != nil {
@@ -292,18 +377,19 @@ func (ServData *ServerStateData) FetchServerList() {
 			item.Tags[t] = RemoveFactorioTags(tag)
 		}
 		tempServerList[i].Modded = item.Mod_count > 0
+		tempServerList[i].Time = updateTime(item)
 	}
 	tempServerList = sortServers(tempServerList)
 
-	ServData.LastRefresh = time.Now().UTC()
-	errLog("Fetched server list at %v", time.Now())
+	sParam.LastRefresh = time.Now().UTC()
+	cwlog.DoLog(false, "Fetched server list at %v", time.Now())
 
 	if len(tempServerList) <= MinValidCount {
 		return
 	}
-	ServData.ServersList = tempServerList
-	ServData.ServersCount = len(tempServerList)
-	WriteServerList(ServData)
+	sParam.ServersList = tempServerList
+	sParam.ServersCount = len(tempServerList)
+	WriteServerList()
 }
 
 func sortServers(list []ServerListItem) []ServerListItem {

@@ -3,11 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"goFactServView/cwlog"
 	"os"
 	"time"
 )
 
-func ReadServerList(ServState *ServerStateData) {
+func ReadServerList() {
 
 	_, err := os.Stat(CacheFile)
 	notfound := os.IsNotExist(err)
@@ -28,25 +29,25 @@ func ReadServerList(ServState *ServerStateData) {
 			tempServerList := []ServerListItem{}
 			err := json.Unmarshal([]byte(file), &tempServerList)
 			if err != nil {
-				errLog("ReadServerList: Unmarshal failure")
+				cwlog.DoLog(true, "ReadServerList: Unmarshal failure")
 				return
 			}
 
 			if len(tempServerList) > MinValidCount {
-				ServState.ServersList = sortServers(tempServerList)
-				ServState.LastRefresh = lastRefresh
-				ServState.ServersCount = len(tempServerList)
-				errLog("Read cached server list.")
+				sParam.ServersList = sortServers(tempServerList)
+				sParam.LastRefresh = lastRefresh
+				sParam.ServersCount = len(tempServerList)
+				cwlog.DoLog(true, "Read cached server list.")
 			}
 			return
 		} else {
-			errLog("ReadServerList: Read file failure")
+			cwlog.DoLog(true, "ReadServerList: Read file failure")
 			return
 		}
 	}
 }
 
-func WriteServerList(ServState *ServerStateData) {
+func WriteServerList() {
 
 	tempPath := CacheFile + ".tmp"
 
@@ -54,32 +55,32 @@ func WriteServerList(ServState *ServerStateData) {
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
 
-	if len(ServState.ServersList) <= MinValidCount {
+	if len(sParam.ServersList) <= MinValidCount {
 		return
 	}
 
-	if err := enc.Encode(ServState.ServersList); err != nil {
-		errLog("WriteServerList: enc.Encode failure")
+	if err := enc.Encode(sParam.ServersList); err != nil {
+		cwlog.DoLog(true, "WriteServerList: enc.Encode failure")
 		return
 	}
 
 	_, err := os.Create(tempPath)
 
 	if err != nil {
-		errLog("WriteServerList: os.Create failure")
+		cwlog.DoLog(true, "WriteServerList: os.Create failure")
 		return
 	}
 
 	err = os.WriteFile(tempPath, outbuf.Bytes(), 0644)
 
 	if err != nil {
-		errLog("WriteServerList: Write file failure")
+		cwlog.DoLog(true, "WriteServerList: Write file failure")
 	}
 
 	err = os.Rename(tempPath, CacheFile)
 
 	if err != nil {
-		errLog("Couldn't rename cache file.")
+		cwlog.DoLog(true, "Couldn't rename cache file.")
 		return
 	}
 }

@@ -2,19 +2,22 @@ package main
 
 import (
 	"fmt"
-	"path"
-	"runtime"
 	"strings"
+	"time"
+
+	"github.com/hako/durafmt"
 )
 
-// Log errors, sprintf format
-func errLog(format string, args ...any) {
-	_, filePath, line, _ := runtime.Caller(1)
-	file := path.Base(filePath)
-	data := fmt.Sprintf(format, args...)
-	buf := fmt.Sprintf("%v:%v: %v", file, line, data)
+func updateTime(item ServerListItem) string {
+	output := "unknown"
 
-	fmt.Println(buf)
+	played, err := time.ParseDuration(fmt.Sprintf("%vm", item.Game_time_elapsed))
+	if err == nil {
+		played = played.Round(time.Second)
+		output = durafmt.Parse(played).LimitFirstN(2).Format(tUnits)
+	}
+
+	return output
 }
 
 func RemoveFactorioTags(input string) string {

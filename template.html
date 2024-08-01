@@ -242,10 +242,11 @@
                     {{ end }}
 
                     {{ if .Has_password }}
-                    <span>Has Password: YES</span><br>
+                    <span>Has Password</span><br>
                     {{ end }}
 
                     <span>Version: {{ .Application_version.Game_version }}</span><br>
+                    <span>Time: {{ .Time }}</span><br>
                     {{ if .Modded }}
                     <span>Mods Installed: {{ .Mod_count }}</span>
                     {{ end }}

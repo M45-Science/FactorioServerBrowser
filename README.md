@@ -4,13 +4,17 @@
 
 Usage of ./goFactServView:
 
+  -httpPort int
+  
+        port to bind to (default 80)
+        
+  -httpsPort int
+  
+        port to bind to for HTTPS (default 443)
+        
   -ip string
   
         IP to bind to
-        
-  -port int
-  
-        port to bind to for HTTP (default 8080)
         
   -token string
   
