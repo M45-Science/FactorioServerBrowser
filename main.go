@@ -55,10 +55,6 @@ var (
 	tUnits durafmt.Units
 )
 
-func redirect(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
-}
-
 func main() {
 	defer time.Sleep(time.Second * 2)
 	sParam = ServerStateData{}
@@ -89,7 +85,7 @@ func main() {
 
 	go func() {
 		buf := fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTP)
-		if err := http.ListenAndServe(buf, http.HandlerFunc(redirect)); err != nil {
+		if err := http.ListenAndServe(buf, http.HandlerFunc(httpsHandler)); err != nil {
 			log.Fatalf("ListenAndServe error: %v", err)
 		}
 	}()
