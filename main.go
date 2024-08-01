@@ -57,7 +57,7 @@ var (
 
 func main() {
 	defer time.Sleep(time.Second * 2)
-	sParam = ServerStateData{}
+	sParam = ServerStateData{UserAgent: UserAgent}
 	sParam.URL = flag.String("url", "multiplayer.factorio.com", "domain name to query")
 	sParam.Token = flag.String("token", "", "Matchmaking API token")
 	sParam.Username = flag.String("username", "", "Matchmaking API username")
