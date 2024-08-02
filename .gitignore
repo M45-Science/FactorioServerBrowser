@@ -1,5 +1,5 @@
 goFactServView
 go.sh
-cache.json
-*.pem
-log
+data/*.json
+data/log
+data/certs/*.pem

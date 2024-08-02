@@ -8,6 +8,36 @@ import (
 	"time"
 )
 
+func autoUpdateCert() {
+	for {
+		time.Sleep(time.Minute)
+
+		filePath := "data/certs/fullchain.pem"
+		initialStat, erra := os.Stat(filePath)
+
+		if erra != nil {
+			continue
+		}
+
+		for initialStat != nil {
+			time.Sleep(time.Minute)
+
+			stat, errb := os.Stat(filePath)
+			if errb != nil {
+				break
+			}
+
+			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
+				cwlog.DoLog(true, "Cert updated, closing.")
+				time.Sleep(time.Second * 5)
+				os.Exit(0)
+				break
+			}
+		}
+
+	}
+}
+
 func ReadServerList() {
 
 	_, err := os.Stat(CacheFile)
@@ -26,17 +56,21 @@ func ReadServerList() {
 
 		if file != nil && err == nil {
 
-			tempServerList := []ServerListItem{}
+			tempServerList := CacheData{}
 			err := json.Unmarshal([]byte(file), &tempServerList)
 			if err != nil {
 				cwlog.DoLog(true, "ReadServerList: Unmarshal failure")
 				return
 			}
+			if tempServerList.Version < CacheVersion {
+				cwlog.DoLog(false, "Cache data is incompatable, skipping.")
+				return
+			}
 
-			if len(tempServerList) > MinValidCount {
-				sParam.ServersList = sortServers(tempServerList)
+			if len(tempServerList.Servers) > MinValidCount {
+				sParam.ServerList.Servers = sortServers(tempServerList.Servers, SORT_PLAYER)
 				sParam.LastRefresh = lastRefresh
-				sParam.ServersCount = len(tempServerList)
+				sParam.ServersCount = len(tempServerList.Servers)
 				cwlog.DoLog(true, "Read cached server list.")
 			}
 			return
@@ -55,11 +89,12 @@ func WriteServerList() {
 	enc := json.NewEncoder(outbuf)
 	enc.SetIndent("", "\t")
 
-	if len(sParam.ServersList) <= MinValidCount {
+	if len(sParam.ServerList.Servers) <= MinValidCount {
 		return
 	}
 
-	if err := enc.Encode(sParam.ServersList); err != nil {
+	sParam.ServerList.Version = CacheVersion
+	if err := enc.Encode(sParam.ServerList); err != nil {
 		cwlog.DoLog(true, "WriteServerList: enc.Encode failure")
 		return
 	}

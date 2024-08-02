@@ -2,28 +2,59 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/hako/durafmt"
 )
 
-func updateTime(item ServerListItem) string {
-	output := "unknown"
+func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
+	if sortBy == SORT_NAME {
+		sort.Slice(list, func(i, j int) bool {
+			return list[i].Name < list[j].Name
+		})
+	} else if sortBy == SORT_TIME {
+		sort.Slice(list, func(i, j int) bool {
+			return list[i].Minutes < list[j].Minutes
+		})
+	} else if sortBy == SORT_RTIME {
+		sort.Slice(list, func(i, j int) bool {
+			return list[i].Minutes > list[j].Minutes
+		})
+	} else {
+		sort.Slice(list, func(i, j int) bool {
+			iNum := len(list[i].Players)
+			jNum := len(list[j].Players)
+			if iNum == jNum {
+				return list[i].Name < list[j].Name
+			}
+			return iNum > jNum
+		})
+	}
+	return list
+}
 
+func updateTime(mins int) string {
+	if mins == 0 {
+		return "0 min"
+	}
+	return durafmt.Parse(time.Duration(mins) * time.Minute).LimitFirstN(2).Format(tUnits)
+}
+
+func getMinutes(item ServerListItem) int {
 	played, err := time.ParseDuration(fmt.Sprintf("%vm", item.Game_time_elapsed))
 	if err == nil {
-		played = played.Round(time.Second)
-		output = durafmt.Parse(played).LimitFirstN(2).Format(tUnits)
+		return int(played.Minutes())
 	}
 
-	return output
+	return 0
 }
 
 func RemoveFactorioTags(input string) string {
 	buf := input
-	buf = regb.ReplaceAllString(buf, "")
-	buf = rega.ReplaceAllString(buf, "")
+	buf = remFactCloseTag.ReplaceAllString(buf, "")
+	buf = remFactTag.ReplaceAllString(buf, "")
 
 	buf = strings.Replace(buf, "\n\r", "\n", -1)
 	buf = strings.Replace(buf, "\r", "\n", -1)

@@ -96,7 +96,7 @@ func StartLog() {
 	t := time.Now()
 
 	/* Create our log file names */
-	logName = fmt.Sprintf("log/auth-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
+	logName = fmt.Sprintf("data/log/auth-%v-%v-%v.log", t.Day(), t.Month(), t.Year())
 
 	/* Make log directory */
 	errr := os.MkdirAll("log", os.ModePerm)

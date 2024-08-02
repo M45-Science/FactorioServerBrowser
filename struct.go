@@ -16,6 +16,11 @@ type modDescriptionData struct {
 	Version string
 }
 
+type CacheData struct {
+	Version int
+	Servers []ServerListItem
+}
+
 type ServerListItem struct {
 	Application_version       appVersionData
 	Description               string
@@ -36,11 +41,12 @@ type ServerListItem struct {
 	ConnectURL string
 	Position   int
 	Time       string
+	Minutes    int
 }
 
 type ServerStateData struct {
 	URL, Query, Token, Username *string
-	ServersList                 []ServerListItem
+	ServerList                  CacheData
 	LastRefresh                 time.Time
 	LastAttempt                 time.Time
 	ServersCount,
