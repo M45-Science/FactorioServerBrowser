@@ -206,6 +206,15 @@
             <div style="margin-left: 50%">
                 <div class="search-container">
                     <div class="form-group">
+                    Sort by:<br>
+                        <select id="sortType">
+                            <option value="sort-players" selected>Player count</option>
+                            <option value="sort-name">Name</option>
+                            <option value="sort-time">Minutes: Newer</option>
+                            <option value="sort-rtime">Minutes: Older</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                     Filter by:<br>
                         <select id="searchType">
                             <option value="all" selected>No Filter</option>
@@ -215,15 +224,7 @@
                             <option value="player">Player Name</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                    Sort by:<br>
-                        <select id="sortType">
-                            <option value="sort-players" selected>Player count</option>
-                            <option value="sort-name">Name</option>
-                            <option value="sort-time">Minutes: Newer</option>
-                            <option value="sort-rtime">Minutes: Older</option>
-                        </select>
-                    </div>
+                    
                     Filter:<br>              
                     <div class="form-group">
                         <input type="text" id="textField" placeholder="">
