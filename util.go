@@ -2,12 +2,39 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/hako/durafmt"
 )
+
+func bgUpdateList() {
+	for {
+		time.Sleep(BGFetchInterval)
+		FetchServerList()
+	}
+}
+
+func parseTemplate() {
+	var err error
+	tmpl, err = template.ParseFiles("data/template.html")
+	if err != nil {
+		panic(err)
+	}
+}
+
+var tUnits durafmt.Units
+
+func setupDurafmt() {
+	var err error
+	tUnits, err = durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
+	if err != nil {
+		panic(err)
+	}
+}
 
 func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
 	if sortBy == SORT_NAME {
@@ -50,6 +77,11 @@ func getMinutes(item ServerListItem) int {
 
 	return 0
 }
+
+var (
+	remFactTag      *regexp.Regexp = regexp.MustCompile(`\[/[^][]+\]`)
+	remFactCloseTag *regexp.Regexp = regexp.MustCompile(`\[(.*?)=(.*?)\]`)
+)
 
 func RemoveFactorioTags(input string) string {
 	buf := input

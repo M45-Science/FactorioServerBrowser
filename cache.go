@@ -8,37 +8,12 @@ import (
 	"time"
 )
 
-func autoUpdateCert() {
-	for {
-		time.Sleep(time.Minute)
+const (
+	CacheFile    = "data/cache.json"
+	CacheVersion = 1
+)
 
-		filePath := "data/certs/fullchain.pem"
-		initialStat, erra := os.Stat(filePath)
-
-		if erra != nil {
-			continue
-		}
-
-		for initialStat != nil {
-			time.Sleep(time.Minute)
-
-			stat, errb := os.Stat(filePath)
-			if errb != nil {
-				break
-			}
-
-			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				cwlog.DoLog(true, "Cert updated, closing.")
-				time.Sleep(time.Second * 5)
-				os.Exit(0)
-				break
-			}
-		}
-
-	}
-}
-
-func ReadServerList() {
+func ReadServerCache() {
 
 	_, err := os.Stat(CacheFile)
 	notfound := os.IsNotExist(err)
@@ -81,7 +56,7 @@ func ReadServerList() {
 	}
 }
 
-func WriteServerList() {
+func WriteServerCache() {
 
 	tempPath := CacheFile + ".tmp"
 

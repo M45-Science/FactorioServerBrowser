@@ -9,30 +9,33 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 	"time"
-
-	"github.com/hako/durafmt"
 )
 
 const (
-	Version      = "0.1.5"
-	VDate        = "08012024-0812p"
-	ProgName     = "goFactServView"
-	CacheVersion = 1
-	UserAgent    = ProgName + "-" + Version
-	VString      = ProgName + "v" + Version + " (" + VDate + ") "
-	CacheFile    = "data/cache.json"
+	Version   = "0.1.6"
+	VDate     = "08022024-0358p"
+	ProgName  = "goFactServView"
+	UserAgent = ProgName + "-" + Version
+	VString   = ProgName + "v" + Version + " (" + VDate + ") "
 
-	ReqTimeout      = time.Second * 5
-	ReqThrottle     = time.Second * 15
+	//How long to wait for list server
+	ReqTimeout = time.Second * 5
+	//How often we can make a request, including on error.
+	ReqThrottle = time.Second * 15
+	//How often we can refresh when new requests come in
 	RefreshInterval = time.Minute * 5
-	ServerTimeout   = 10 * time.Second
+	//Timeout before our http(s) servers time out
+	ServerTimeout = 10 * time.Second
 
+	//How often to refresh if there are no requests
 	BGFetchInterval = time.Hour * 3
+
 	//If we get less results than this, assume the data is incomplete or corrupt
 	MinValidCount = 25
-	ItemsPerPage  = 25
+
+	//Servers per page
+	ItemsPerPage = 25
 )
 
 var (
@@ -43,14 +46,12 @@ var (
 	bindPortHTTPS *int
 	bindPortHTTP  *int
 
-	remFactTag      *regexp.Regexp = regexp.MustCompile(`\[/[^][]+\]`)
-	remFactCloseTag *regexp.Regexp = regexp.MustCompile(`\[(.*?)=(.*?)\]`)
-	tUnits          durafmt.Units
-	fileServer      http.Handler
+	fileServer http.Handler
 )
 
 func main() {
 
+	//Parse parameters
 	sParam = ServerStateData{UserAgent: UserAgent}
 	sParam.URL = flag.String("url", "multiplayer.factorio.com", "domain name to query")
 	sParam.Token = flag.String("token", "", "Matchmaking API token")
@@ -62,68 +63,44 @@ func main() {
 
 	flag.Parse()
 
+	//Require token/username
 	if *sParam.Token == "" || *sParam.Username == "" {
 		cwlog.DoLog(false, "You must supply a username and token. -h for help.")
 		os.Exit(1)
 		return
 	}
 
+	//Defer to give log time to write on close
 	defer time.Sleep(time.Second * 2)
-
-	var err error
-	tUnits, err = durafmt.DefaultUnitsCoder.Decode("yr:yrs,wk:wks,day:days,hr:hrs,min:mins,sec:secs,ms:ms,μs:μs")
-	if err != nil {
-		panic(err)
-	}
-
 	cwlog.StartLog()
 	cwlog.LogDaemon()
 
+	setupDurafmt()
+
+	ReadServerCache()
+
+	parseTemplate()
+
+	fileServer = http.FileServer(http.Dir("data/www"))
+
+	go bgUpdateList()
+
+	//HTTP listen
 	go func() {
 		buf := fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTP)
-		if err := http.ListenAndServe(buf, http.HandlerFunc(httpsHandler)); err != nil {
+		if err := http.ListenAndServe(buf, http.HandlerFunc(reqHandle)); err != nil {
 			log.Fatalf("ListenAndServe error: %v", err)
 		}
 	}()
 
-	//Read server cache
-	ReadServerList()
+	http.HandleFunc("/", reqHandle)
 
-	//Parse template
-	tmpl, err = template.ParseFiles("data/template.html")
-	if err != nil {
-		panic(err)
-	}
-
-	/* Download server */
-	fileServer = http.FileServer(http.Dir("data/www"))
-
-	//Refresh cache infrequently
-	go func() {
-		for {
-			time.Sleep(BGFetchInterval)
-			FetchServerList()
-		}
-	}()
-
-	/* Load certificates */
-	cert, err := tls.LoadX509KeyPair("data/certs/fullchain.pem", "data/certs/privkey.pem")
-	if err != nil {
-		cwlog.DoLog(true, "Error loading TLS key pair: %v data/certs/(fullchain.pem, privkey.pem)", err)
-		return
-	}
-	cwlog.DoLog(true, "Loaded certs.")
-
-	/* HTTPS server */
-	http.HandleFunc("/", httpsHandler)
-
-	/* Create TLS configuration */
+	cert := loadCerts()
 	config := &tls.Config{
 		Certificates:       []tls.Certificate{cert},
 		InsecureSkipVerify: false,
 	}
 
-	/* Create HTTPS server */
 	server := &http.Server{
 		Addr:         fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTPS),
 		Handler:      http.DefaultServeMux,
@@ -137,9 +114,9 @@ func main() {
 
 	go autoUpdateCert()
 
-	// Start server
 	cwlog.DoLog(true, "Server started.")
-	err = server.ListenAndServeTLS("", "")
+	//https listen
+	err := server.ListenAndServeTLS("", "")
 	if err != nil {
 		cwlog.DoLog(true, "ListenAndServeTLS: %v", err)
 		panic(err)

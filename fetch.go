@@ -88,5 +88,5 @@ func FetchServerList() {
 	}
 	sParam.ServerList.Servers = tempServerList
 	sParam.ServersCount = len(tempServerList)
-	WriteServerList()
+	WriteServerCache()
 }

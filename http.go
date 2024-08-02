@@ -16,7 +16,7 @@ const (
 	SORT_RTIME
 )
 
-func httpsHandler(w http.ResponseWriter, r *http.Request) {
+func reqHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		return
 	}
