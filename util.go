@@ -11,13 +11,15 @@ import (
 	"github.com/hako/durafmt"
 )
 
-func bgUpdateList() {
+// In background, update the server list
+func backgroundUpdateList() {
 	for {
 		time.Sleep(BGFetchInterval)
-		FetchServerList()
+		fetchServerList()
 	}
 }
 
+// Parse the template
 func parseTemplate() {
 	var err error
 	tmpl, err = template.ParseFiles("data/template.html")
@@ -26,6 +28,7 @@ func parseTemplate() {
 	}
 }
 
+// Pretty-print durations
 var tUnits durafmt.Units
 
 func setupDurafmt() {
@@ -36,6 +39,7 @@ func setupDurafmt() {
 	}
 }
 
+// Sort servers by sortBy
 func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
 	if sortBy == SORT_NAME {
 		sort.Slice(list, func(i, j int) bool {
@@ -62,6 +66,7 @@ func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
 	return list
 }
 
+// Update map time (string)
 func updateTime(mins int) string {
 	if mins == 0 {
 		return "0 min"
@@ -69,6 +74,7 @@ func updateTime(mins int) string {
 	return durafmt.Parse(time.Duration(mins) * time.Minute).LimitFirstN(2).Format(tUnits)
 }
 
+// Safely convert interface{} to integer
 func getMinutes(item ServerListItem) int {
 	played, err := time.ParseDuration(fmt.Sprintf("%vm", item.Game_time_elapsed))
 	if err == nil {
@@ -78,6 +84,7 @@ func getMinutes(item ServerListItem) int {
 	return 0
 }
 
+// Factorio tag removal
 var (
 	remFactTag      *regexp.Regexp = regexp.MustCompile(`\[/[^][]+\]`)
 	remFactCloseTag *regexp.Regexp = regexp.MustCompile(`\[(.*?)=(.*?)\]`)
@@ -96,6 +103,7 @@ func RemoveFactorioTags(input string) string {
 	return buf
 }
 
+// Generate a quick-connect link
 func MakeSteamURL(host string) string {
 	buf := fmt.Sprintf("https://go-game.net/gosteam/427520.--mp-connect%%20%v", host)
 	return buf

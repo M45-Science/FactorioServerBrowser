@@ -38,12 +38,14 @@ type ServerListItem struct {
 	Server_id                 string
 	Tags                      []string
 
+	//Local converted data
 	ConnectURL string
 	Position   int
 	Time       string
 	Minutes    int
 }
 
+// Server state
 type ServerStateData struct {
 	URL, Query, Token, Username *string
 	ServerList                  CacheData

@@ -60,7 +60,6 @@ func main() {
 	bindIP = flag.String("ip", "", "IP to bind to")
 	bindPortHTTPS = flag.Int("httpsPort", 443, "port to bind to for HTTPS")
 	bindPortHTTP = flag.Int("httpPort", 80, "port to bind to")
-
 	flag.Parse()
 
 	//Require token/username
@@ -75,15 +74,19 @@ func main() {
 	cwlog.StartLog()
 	cwlog.LogDaemon()
 
+	//Pretty time formatting
 	setupDurafmt()
 
+	//Read cache.json
 	ReadServerCache()
 
+	//Parse template.html
 	parseTemplate()
 
+	//HTTP(s) fileserver
 	fileServer = http.FileServer(http.Dir("data/www"))
 
-	go bgUpdateList()
+	go backgroundUpdateList()
 
 	//HTTP listen
 	go func() {
@@ -114,8 +117,8 @@ func main() {
 
 	go autoUpdateCert()
 
-	cwlog.DoLog(true, "Server started.")
 	//https listen
+	cwlog.DoLog(true, "Server started.")
 	err := server.ListenAndServeTLS("", "")
 	if err != nil {
 		cwlog.DoLog(true, "ListenAndServeTLS: %v", err)

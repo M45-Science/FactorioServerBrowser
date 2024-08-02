@@ -16,17 +16,22 @@ const (
 	SORT_RTIME
 )
 
+// HTTP request handler
 func reqHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		return
 	}
 
+	//If this isn't a query, pass to file server
 	if !strings.EqualFold(r.RequestURI, "/") && !strings.HasPrefix(r.RequestURI, "/?") {
 		fileServer.ServeHTTP(w, r)
 		return
 	}
 
-	FetchServerList()
+	//If needed, refresh data
+	fetchServerList()
+
+	//Build temporary server params
 	var tempParams *ServerStateData = &ServerStateData{
 		URL:          sParam.URL,
 		Query:        sParam.Query,
@@ -40,22 +45,25 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 		ItemsPerPage: ItemsPerPage,
 	}
 
+	//Create a blank server list
 	tempServersList := []ServerListItem{}
 	page := 1
 
+	//Log request
 	cwlog.DoLog(false, "Request: %v", r.RequestURI)
-
 	sortBy := SORT_PLAYER
 
 	queryItems := r.URL.Query()
 	if len(queryItems) > 0 {
-		//cwlog.DoLog(false, "Query: %v", queryItems)
 		found := false
 		for key, values := range queryItems {
+
+			//Skip if invalid
 			if len(key) == 0 || len(values) == 0 {
 				continue
 			}
 
+			//Don't parse multiple searches
 			if !found {
 				if strings.EqualFold(key, "all") || values[0] == "" {
 					tempServersList = tempParams.ServerList.Servers
@@ -103,6 +111,7 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+			//Parse sorting arguments
 			if strings.EqualFold(key, "sort-players") {
 				sortBy = SORT_PLAYER
 			} else if strings.EqualFold(key, "sort-name") {
@@ -120,43 +129,59 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+
+		//IF found, then sort
 		if found {
 			tempParams.ServerList.Servers = sortServers(tempServersList, sortBy)
 			tempParams.ServersCount = len(tempServersList)
 		}
 	}
-	paginateList(page, tempParams)
-	err := tmpl.Execute(w, tempParams)
 
+	//Build a single page of results
+	paginateList(page, tempParams)
+
+	//Execute template
+	err := tmpl.Execute(w, tempParams)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
+// Present a single page of results
 func paginateList(page int, tempParams *ServerStateData) {
 	if page < 1 {
 		page = 1
 	}
+	//Calculate list position
 	pageStart := (page - 1) * ItemsPerPage
 	pageEnd := page * ItemsPerPage
+
+	//Build temp list
 	tempServerList := []ServerListItem{}
 
+	//Calculate start/end of page
 	if pageEnd > tempParams.ServersCount {
 		pageEnd = tempParams.ServersCount
 	}
 	if pageStart > tempParams.ServersCount {
 		pageStart = tempParams.ServersCount - tempParams.ItemsPerPage
 	}
+	//Reject invalid page
 	if pageStart < 0 {
 		return
 	}
 
+	//Put results into temp list
 	for c := pageStart; c < pageEnd; c++ {
 		tempParams.ServerList.Servers[c].Position = c + 1
 		tempServerList = append(tempServerList, tempParams.ServerList.Servers[c])
 	}
+
+	//Put results into page
 	tempParams.ServerList.Servers = tempServerList
 	tempParams.NumPages = int(math.Ceil(float64(tempParams.ServersCount) / float64(tempParams.ItemsPerPage)))
+
+	//Handle invalid or nil page numbers
 	if page > tempParams.NumPages {
 		tempParams.CurrentPage = tempParams.NumPages
 	} else if page < 1 {
