@@ -10,7 +10,7 @@ import (
 
 const (
 	CacheFile    = "data/cache.json"
-	CacheVersion = 1
+	CacheVersion = 2
 )
 
 func ReadServerCache() {

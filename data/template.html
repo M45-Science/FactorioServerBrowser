@@ -212,26 +212,26 @@
                     <div class="form-group">
                     Sort by:<br>
                         <select id="sortType">
-                            <option value="sort-players" selected>Player count</option>
-                            <option value="sort-name">Name</option>
-                            <option value="sort-time">Minutes: Newer</option>
-                            <option value="sort-rtime">Minutes: Older</option>
+                            <option value="sort-players"  {{if .SPlayers}}selected{{end}}>Player count</option>
+                            <option value="sort-name" {{if .SName}}selected{{end}}>Name</option>
+                            <option value="sort-time" {{if .STime}}selected{{end}}>Minutes: Newer</option>
+                            <option value="sort-rtime" {{if .SRTime}}selected{{end}}>Minutes: Older</option>
                         </select>
                     </div>
                     <div class="form-group">
                     Filter by:<br>
                         <select id="searchType">
-                            <option value="all" selected>No Filter</option>
-                            <option value="tag">Tag</option>
-                            <option value="name">Name</option>
-                            <option value="desc">Description</option>
-                            <option value="player">Player Name</option>
+                            <option value="all" {{if .FAll}}selected{{end}}>No Filter</option>
+                            <option value="tag" {{if .FTag}}selected{{end}}>Tag</option>
+                            <option value="name" {{if .FName}}selected{{end}}>Name</option>
+                            <option value="desc" {{if .FDesc}}selected{{end}}>Description</option>
+                            <option value="player" {{if .FPlayer}}selected{{end}}>Player Name</option>
                         </select>
                     </div>
                     
                     Filter:<br>              
                     <div class="form-group">
-                        <input type="text" id="textField" placeholder="">
+                        <input type="text" id="textField" value="{{.Searched}}">
                     </div>
                     <div class="form-group">
                         <button onclick="goToUrl()">Go</button>
@@ -258,9 +258,9 @@
                             <span>Players: None</span>
                             {{ end }}
 
-                            <span>, Time: {{ .Time }}</span>
+                            <span>, Time: {{ .Local.TimeStr }}</span>
 
-                            {{ if .Modded }}
+                            {{ if .Local.Modded }}
                             <span>, Mods Installed: {{ .Mod_count }}</span>
                             {{ end }}
 
@@ -270,7 +270,7 @@
                             <span>, Has Password</span>
                             {{ end }}
 
-                            , <a href="{{ .ConnectURL }}">(quick connect)</a>
+                            , (<a href="{{ .Local.ConnectURL }}">connect</a>)
                         </div>
                     </div>
                     <div class="server-details">

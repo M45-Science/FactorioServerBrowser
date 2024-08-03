@@ -22,27 +22,23 @@ type CacheData struct {
 }
 
 type ServerListItem struct {
-	Application_version       appVersionData
-	Description               string
-	Game_id                   int
-	Game_time_elapsed         interface{}
-	Has_password              bool
-	Host_address              string
-	Max_players               int
-	Mod_count                 int
-	Modded                    bool
-	Mods                      []modDescriptionData
-	Name                      string
-	Players                   []string
-	Require_user_verification bool
-	Server_id                 string
-	Tags                      []string
+	Application_version appVersionData
+	Description         string
+	//Game_id                   int
+	Game_time_elapsed interface{}
+	Has_password      bool
+	Host_address      string
+	//Max_players               int
+	Mod_count int
+	//Mods                      []modDescriptionData
+	Name    string
+	Players []string
+	//Require_user_verification bool
+	//Server_id                 string
+	Tags []string
 
-	//Local converted data
-	ConnectURL string
-	Position   int
-	Time       string
-	Minutes    int
+	//Local data
+	Local ServerMetaData
 }
 
 // Server state
@@ -56,5 +52,19 @@ type ServerStateData struct {
 	CurrentPage,
 	ItemsPerPage int
 
-	UserAgent, Version string
+	FAll, FTag, FName, FDesc, FPlayer bool
+	SPlayers, SName, STime, SRTime    bool
+
+	UserAgent, Version, Searched string
+}
+
+type ServerMetaData struct {
+	ConnectURL string
+	TimeStr    string
+	Minutes    int
+	Modded     bool
+
+	Icon     string
+	Homepage string
+	Discord  string
 }

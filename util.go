@@ -47,11 +47,11 @@ func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
 		})
 	} else if sortBy == SORT_TIME {
 		sort.Slice(list, func(i, j int) bool {
-			return list[i].Minutes < list[j].Minutes
+			return list[i].Local.Minutes < list[j].Local.Minutes
 		})
 	} else if sortBy == SORT_RTIME {
 		sort.Slice(list, func(i, j int) bool {
-			return list[i].Minutes > list[j].Minutes
+			return list[i].Local.Minutes > list[j].Local.Minutes
 		})
 	} else {
 		sort.Slice(list, func(i, j int) bool {

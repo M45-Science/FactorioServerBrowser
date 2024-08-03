@@ -55,7 +55,8 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 
 	queryItems := r.URL.Query()
 	if len(queryItems) > 0 {
-		found := false
+		filterFound := false
+		sortFound := false
 		for key, values := range queryItems {
 
 			//Skip if invalid
@@ -64,11 +65,12 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			}
 
 			//Don't parse multiple searches
-			if !found {
+			if !filterFound {
 				if strings.EqualFold(key, "all") || values[0] == "" {
 					tempServersList = tempParams.ServerList.Servers
-					found = true
-				} else if !found && strings.EqualFold(key, "name") {
+					filterFound = true
+					tempParams.Searched = ""
+				} else if !filterFound && strings.EqualFold(key, "name") {
 					for s, server := range tempParams.ServerList.Servers {
 						lName := strings.ToLower(server.Name)
 						lVal := strings.ToLower(values[0])
@@ -76,8 +78,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
 						}
 					}
-					found = true
-				} else if !found && strings.EqualFold(key, "desc") {
+					filterFound = true
+					tempParams.Searched = values[0]
+					tempParams.SName = true
+				} else if !filterFound && strings.EqualFold(key, "desc") {
 					for s, server := range tempParams.ServerList.Servers {
 						lDesc := strings.ToLower(server.Description)
 						lVal := strings.ToLower(values[0])
@@ -85,8 +89,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
 						}
 					}
-					found = true
-				} else if !found && strings.EqualFold(key, "tag") {
+					filterFound = true
+					tempParams.Searched = values[0]
+					tempParams.FDesc = true
+				} else if !filterFound && strings.EqualFold(key, "tag") {
 					for s, server := range tempParams.ServerList.Servers {
 						for _, tag := range server.Tags {
 							if strings.EqualFold(values[0], tag) {
@@ -95,8 +101,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 					}
-					found = true
-				} else if !found && strings.EqualFold(key, "player") {
+					filterFound = true
+					tempParams.Searched = values[0]
+					tempParams.FTag = true
+				} else if !filterFound && strings.EqualFold(key, "player") {
 					for s, server := range tempParams.ServerList.Servers {
 						for _, player := range server.Players {
 							lPlayer := strings.ToLower(player)
@@ -107,19 +115,29 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 					}
-					found = true
+					filterFound = true
+					tempParams.Searched = values[0]
+					tempParams.FPlayer = true
 				}
 			}
 
 			//Parse sorting arguments
 			if strings.EqualFold(key, "sort-players") {
 				sortBy = SORT_PLAYER
+				tempParams.SPlayers = true
+				sortFound = true
 			} else if strings.EqualFold(key, "sort-name") {
 				sortBy = SORT_NAME
+				tempParams.SName = true
+				sortFound = true
 			} else if strings.EqualFold(key, "sort-time") {
 				sortBy = SORT_TIME
+				tempParams.STime = true
+				sortFound = true
 			} else if strings.EqualFold(key, "sort-rtime") {
 				sortBy = SORT_RTIME
+				tempParams.SRTime = true
+				sortFound = true
 			} else if strings.EqualFold(key, "page") {
 				val, err := strconv.ParseUint(values[0], 10, 64)
 				if err != nil {
@@ -130,10 +148,15 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		//IF found, then sort
-		if found {
+		if !sortFound {
+			tempParams.SPlayers = true
+		}
+
+		if filterFound {
 			tempParams.ServerList.Servers = sortServers(tempServersList, sortBy)
 			tempParams.ServersCount = len(tempServersList)
+		} else {
+			tempParams.FAll = true
 		}
 	}
 
@@ -173,7 +196,6 @@ func paginateList(page int, tempParams *ServerStateData) {
 
 	//Put results into temp list
 	for c := pageStart; c < pageEnd; c++ {
-		tempParams.ServerList.Servers[c].Position = c + 1
 		tempServerList = append(tempServerList, tempParams.ServerList.Servers[c])
 	}
 
