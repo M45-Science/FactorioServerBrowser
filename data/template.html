@@ -253,13 +253,13 @@
                         <h2 class="server-title">{{ .Name }}</h2>
                         <div class="server-meta">
                             {{ if len .Players }}
-                            <span>Players: {{ len .Players }} / {{ .Max_players }}</span>
+                            <span>Players: {{ len .Players }}</span>
                             {{ else }}
                             <span>, Players: None</span>
                             {{ end }}
 
                             <span>, Time: {{ .Time }}</span>
-
+r
                             {{ if .Modded }}
                             <span>, Mods Installed: {{ .Mod_count }}</span>
                             {{ end }}
