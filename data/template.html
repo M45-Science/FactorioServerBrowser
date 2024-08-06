@@ -238,7 +238,7 @@
                     <input type="text" id="textField" value="{{.Searched}}">
                 </div>
                 <div class="form-group">
-                    <button onclick="goToUrl()">Go</button>
+                    <button type="submit" onclick="goToUrl()">Go</button>
                 </div>
             </div>
         </div>
@@ -248,7 +248,7 @@
         {{ end }}<br>
         {{ if .ServersCount }}
         Page: {{ .CurrentPage }} / {{ .NumPages }}
-        <button onclick="goPrevPage()"><</button> <button class="nextPageButton">></button>
+        <button type="submit" onclick="goPrevPage()"><</button> <button type="submit" class="nextPageButton">></button>
                 {{ end }}
                 {{ range .ServerList.Servers }}
                 <div class="server-item">
@@ -307,7 +307,7 @@
                 {{ end }}
                 {{ if .ServersCount }}
                 Page: {{ .CurrentPage }} / {{ .NumPages }}
-                <button onclick="goPrevPage()"><</button> <button class="nextPageButton">></button>
+                <button type="submit" onclick="goPrevPage()"><</button> <button type="submit" class="nextPageButton">></button>
                         <div class="server-footer">
                             <p>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
                                     href="https://m45sci.xyz">M45-Science</a></p>
