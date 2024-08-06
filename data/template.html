@@ -122,6 +122,8 @@
             margin: 20px;
             padding: 20px;
             width: min-content;
+            margin-right: auto;
+            height: fit-content;
         }
 
         .form-group {
@@ -143,6 +145,9 @@
         .tag-list li,
         .server-footer {
             transition: background-color 0.3s, color 0.3s;
+        }
+        .top-section{
+            display: flex;
         }
     </style>
     <script>
@@ -195,47 +200,45 @@
 
 <body>
     <div class="container">
-        <div style="width: 100%; overflow: hidden;">
-            <div style="width: 50%; float: left;">
+        <div class="top-section">
+            <div class="info-section">
                 <h1>Factorio Server Listings</h1>
                 {{ .UserAgent }}<br><br>
                 Brought to you by <a href="https://go-game.net">go-game.net</a> and <a href="https://m45sci.xyz">M45-Science</a>.<br>
-                Factorio <a href="https://forums.factorio.com/viewtopic.php?t=114565">forum post</a>, 
-                <a href="https://github.com/M45-Science/goFactorioServerViewer">Github repo</a>, 
+                Factorio <a href="https://forums.factorio.com/viewtopic.php?t=114565">forum post</a>,
+                <a href="https://github.com/M45-Science/goFactorioServerViewer">Github repo</a>,
                 <a href="changelog.html">Change-log</a><br>
                     Factorio wiki: <a href="https://wiki.factorio.com/Matchmaking_API">Matchmaking API</a><br><br>
                     (We are not affiliated with <a href="https://www.factorio.com/game/about">Wube Software</a>.)
                 </p>
             </div>
-            <div style="margin-left: 70%">
-                <div class="search-container">
-                    <div class="form-group">
-                    Sort by:<br>
-                        <select id="sortType">
-                            <option value="sort-players"  {{if .SPlayers}}selected{{end}}>Player count</option>
-                            <option value="sort-name" {{if .SName}}selected{{end}}>Name</option>
-                            <option value="sort-time" {{if .STime}}selected{{end}}>Minutes: Newer</option>
-                            <option value="sort-rtime" {{if .SRTime}}selected{{end}}>Minutes: Older</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                    Filter by:<br>
-                        <select id="searchType">
-                            <option value="all" {{if .FAll}}selected{{end}}>No Filter</option>
-                            <option value="tag" {{if .FTag}}selected{{end}}>Tag</option>
-                            <option value="name" {{if .FName}}selected{{end}}>Name</option>
-                            <option value="desc" {{if .FDesc}}selected{{end}}>Description</option>
-                            <option value="player" {{if .FPlayer}}selected{{end}}>Player Name</option>
-                        </select>
-                    </div>
-                    
-                    Filter:<br>              
-                    <div class="form-group">
-                        <input type="text" id="textField" value="{{.Searched}}">
-                    </div>
-                    <div class="form-group">
-                        <button onclick="goToUrl()">Go</button>
-                    </div>
+            <div class="search-container">
+                <div class="form-group">
+                Sort by:<br>
+                    <select id="sortType">
+                        <option value="sort-players"  {{if .SPlayers}}selected{{end}}>Player count</option>
+                        <option value="sort-name" {{if .SName}}selected{{end}}>Name</option>
+                        <option value="sort-time" {{if .STime}}selected{{end}}>Minutes: Newer</option>
+                        <option value="sort-rtime" {{if .SRTime}}selected{{end}}>Minutes: Older</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                Filter by:<br>
+                    <select id="searchType">
+                        <option value="all" {{if .FAll}}selected{{end}}>No Filter</option>
+                        <option value="tag" {{if .FTag}}selected{{end}}>Tag</option>
+                        <option value="name" {{if .FName}}selected{{end}}>Name</option>
+                        <option value="desc" {{if .FDesc}}selected{{end}}>Description</option>
+                        <option value="player" {{if .FPlayer}}selected{{end}}>Player Name</option>
+                    </select>
+                </div>
+
+                Filter:<br>
+                <div class="form-group">
+                    <input type="text" id="textField" value="{{.Searched}}">
+                </div>
+                <div class="form-group">
+                    <button onclick="goToUrl()">Go</button>
                 </div>
             </div>
         </div>
@@ -281,7 +284,7 @@
                         {{ end }}
                         {{ if .Players }}
                         <ul class="player-list">
-                            <li>Players: 
+                            <li>Players:
                                 {{ range .Players }}
                                 {{ . }},
                                 {{ end }}
@@ -291,7 +294,7 @@
                         {{ if .Tags }}
                         <ul class="tag-list">
                             <li>
-                                Tags: 
+                                Tags:
                                 {{ range .Tags }}
                                 {{ . }},
                                 {{ end }}
