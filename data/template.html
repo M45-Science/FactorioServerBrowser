@@ -214,15 +214,17 @@
             </div>
             <div class="search-container">
                 <div class="form-group">
-                Sort by:<br>
+                <label>Sort by:<br>
                     <select id="sortType">
                         <option value="sort-players"  {{if .SPlayers}}selected{{end}}>Player count</option>
                         <option value="sort-name" {{if .SName}}selected{{end}}>Name</option>
                         <option value="sort-time" {{if .STime}}selected{{end}}>Minutes: Newer</option>
                         <option value="sort-rtime" {{if .SRTime}}selected{{end}}>Minutes: Older</option>
                     </select>
+                </label>
                 </div>
                 <div class="form-group">
+                <label>
                 Filter by:<br>
                     <select id="searchType">
                         <option value="all" {{if .FAll}}selected{{end}}>No Filter</option>
@@ -231,12 +233,14 @@
                         <option value="desc" {{if .FDesc}}selected{{end}}>Description</option>
                         <option value="player" {{if .FPlayer}}selected{{end}}>Player Name</option>
                     </select>
+                </label>
                 </div>
 
-                Filter:<br>
+                <label>Filter:<br>
                 <div class="form-group">
                     <input type="text" id="textField" value="{{.Searched}}">
                 </div>
+                </label>
                 <div class="form-group">
                     <button type="submit" onclick="goToUrl()">Go</button>
                 </div>
