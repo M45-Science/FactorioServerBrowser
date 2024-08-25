@@ -193,8 +193,6 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			tempParams.ServerList.Servers = tempServers
 			tempParams.ServersCount = len(tempServers)
 		}
-	} else {
-		cwlog.DoLog(true, "No params?")
 	}
 
 	//Build a single page of results
@@ -203,10 +201,8 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 	//Execute template
 	err := tmpl.Execute(w, tempParams)
 	if err != nil {
-		cwlog.DoLog(true, "Template error: %v", err)
+		cwlog.DoLog(true, "Error: %v", err)
 	}
-
-	cwlog.DoLog(true, "Page: %v, Searched: %v", tempParams.CurrentPage, tempParams.Searched)
 }
 
 // Present a single page of results
