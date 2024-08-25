@@ -64,6 +64,12 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
+			if strings.EqualFold(key, "vanilla") {
+				tempParams.VanillaOnly = true
+			} else if strings.EqualFold(key, "modded") {
+				tempParams.ModdedOnly = true
+			}
+
 			//Don't parse multiple searches
 			if !filterFound {
 				if strings.EqualFold(key, "all") || values[0] == "" {
@@ -158,6 +164,26 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 		} else {
 			tempParams.FAll = true
 		}
+	}
+
+	if tempParams.ModdedOnly {
+		var tempServers []ServerListItem
+		for s, server := range tempParams.ServerList.Servers {
+			if server.Mod_count > 0 {
+				tempServers = append(tempServers, tempParams.ServerList.Servers[s])
+			}
+		}
+		tempParams.ServerList.Servers = tempServers
+		tempParams.ServersCount = len(tempServers)
+	} else if tempParams.VanillaOnly {
+		var tempServers []ServerListItem
+		for s, server := range tempParams.ServerList.Servers {
+			if server.Mod_count == 0 {
+				tempServers = append(tempServers, tempParams.ServerList.Servers[s])
+			}
+		}
+		tempParams.ServerList.Servers = tempServers
+		tempParams.ServersCount = len(tempServers)
 	}
 
 	//Build a single page of results

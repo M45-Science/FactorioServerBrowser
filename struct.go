@@ -54,6 +54,7 @@ type ServerStateData struct {
 
 	FAll, FTag, FName, FDesc, FPlayer bool
 	SPlayers, SName, STime, SRTime    bool
+	VanillaOnly, ModdedOnly           bool
 
 	UserAgent, Version, Searched string
 }
