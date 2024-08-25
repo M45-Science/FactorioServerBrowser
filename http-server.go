@@ -66,8 +66,13 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 
 			if strings.EqualFold(key, "vanilla") {
 				tempParams.VanillaOnly = true
+				tempParams.ModdedOnly = false
 			} else if strings.EqualFold(key, "modded") {
+				tempParams.VanillaOnly = false
 				tempParams.ModdedOnly = true
+			} else if strings.EqualFold(key, "both") {
+				tempParams.VanillaOnly = false
+				tempParams.ModdedOnly = false
 			}
 
 			//Don't parse multiple searches
