@@ -15,7 +15,9 @@ import (
 func backgroundUpdateList() {
 	for {
 		time.Sleep(BGFetchInterval)
+		FetchLock.Lock()
 		fetchServerList()
+		FetchLock.Unlock()
 	}
 }
 

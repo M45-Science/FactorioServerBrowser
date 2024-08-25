@@ -15,6 +15,9 @@ const (
 
 func ReadServerCache() {
 
+	FetchLock.Lock()
+	defer FetchLock.Unlock()
+
 	_, err := os.Stat(CacheFile)
 	notfound := os.IsNotExist(err)
 

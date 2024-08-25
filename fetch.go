@@ -15,9 +15,6 @@ var FetchLock sync.Mutex
 
 func fetchServerList() {
 
-	FetchLock.Lock()
-	defer FetchLock.Unlock()
-
 	//Don't refresh unless enough time has passed
 	if time.Since(sParam.LastRefresh) < RefreshInterval {
 		return

@@ -28,6 +28,8 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	FetchLock.Lock()
+
 	//If needed, refresh data
 	fetchServerList()
 
@@ -44,6 +46,8 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 		ServersCount: sParam.ServersCount,
 		ItemsPerPage: ItemsPerPage,
 	}
+
+	FetchLock.Unlock()
 
 	//Create a blank server list
 	tempServersList := []ServerListItem{}
@@ -77,7 +81,7 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 
 			//Don't parse multiple searches
 			if !filterFound {
-				if strings.EqualFold(key, "all") || values[0] == "" {
+				if strings.EqualFold(key, "all") {
 					tempServersList = tempParams.ServerList.Servers
 					filterFound = true
 					tempParams.Searched = ""
@@ -189,6 +193,8 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			tempParams.ServerList.Servers = tempServers
 			tempParams.ServersCount = len(tempServers)
 		}
+	} else {
+		cwlog.DoLog(true, "No params?")
 	}
 
 	//Build a single page of results
@@ -197,8 +203,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 	//Execute template
 	err := tmpl.Execute(w, tempParams)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		cwlog.DoLog(true, "Template error: %v", err)
 	}
+
+	cwlog.DoLog(true, "Page: %v, Searched: %v", tempParams.CurrentPage, tempParams.Searched)
 }
 
 // Present a single page of results
