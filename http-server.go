@@ -164,26 +164,26 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 		} else {
 			tempParams.FAll = true
 		}
-	}
 
-	if tempParams.ModdedOnly {
-		var tempServers []ServerListItem
-		for s, server := range tempParams.ServerList.Servers {
-			if server.Mod_count > 0 {
-				tempServers = append(tempServers, tempParams.ServerList.Servers[s])
+		if tempParams.ModdedOnly {
+			var tempServers []ServerListItem
+			for s, server := range tempServersList {
+				if server.Mod_count > 0 {
+					tempServers = append(tempServers, tempServersList[s])
+				}
 			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	} else if tempParams.VanillaOnly {
-		var tempServers []ServerListItem
-		for s, server := range tempParams.ServerList.Servers {
-			if server.Mod_count == 0 {
-				tempServers = append(tempServers, tempParams.ServerList.Servers[s])
+			tempParams.ServerList.Servers = tempServers
+			tempParams.ServersCount = len(tempServers)
+		} else if tempParams.VanillaOnly {
+			var tempServers []ServerListItem
+			for s, server := range tempServersList {
+				if server.Mod_count == 0 {
+					tempServers = append(tempServers, tempServersList[s])
+				}
 			}
+			tempParams.ServerList.Servers = tempServers
+			tempParams.ServersCount = len(tempServers)
 		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
 	}
 
 	//Build a single page of results

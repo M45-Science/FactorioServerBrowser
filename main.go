@@ -13,20 +13,20 @@ import (
 )
 
 const (
-	Version   = "0.1.8"
-	VDate     = "08032024-1244p"
+	Version   = "0.1.9"
+	VDate     = "08242024-1027p"
 	ProgName  = "goFactServView"
 	UserAgent = ProgName + "-" + Version
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
 
 	//How long to wait for list server
-	ReqTimeout = time.Second * 5
+	ReqTimeout = time.Second * 2
 	//How often we can make a request, including on error.
 	ReqThrottle = time.Second * 15
 	//How often we can refresh when new requests come in
 	RefreshInterval = time.Minute * 5
 	//Timeout before our http(s) servers time out
-	ServerTimeout = 10 * time.Second
+	ServerTimeout = 5 * time.Second
 
 	//How often to refresh if there are no requests
 	BGFetchInterval = time.Hour * 3
