@@ -71,6 +71,7 @@ func fetchServerList() {
 
 	//Remove Factorio tags
 	for i, item := range tempServerList {
+
 		tempServerList[i].Local.ConnectURL = MakeSteamURL(item.Host_address)
 		tempServerList[i].Name = RemoveFactorioTags(item.Name)
 		tempServerList[i].Description = RemoveFactorioTags(item.Description)
@@ -78,6 +79,14 @@ func fetchServerList() {
 			item.Tags[t] = RemoveFactorioTags(tag)
 		}
 
+		//If name is only tags, allow it.
+		if tempServerList[i].Name == "" {
+			tempServerList[i].Name = item.Name
+		}
+		//If server name is still nothing, put something into that field.
+		if tempServerList[i].Name == "" {
+			tempServerList[i].Name = "Unnamed Server"
+		}
 		//Convert some of the data for web
 		tempServerList[i].Local.Modded = item.Mod_count > 0
 		mins := getMinutes(item)
