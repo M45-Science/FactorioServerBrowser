@@ -68,6 +68,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
+			if strings.EqualFold(key, "version") {
+				tempParams.FVersion = values[0]
+			}
+
 			if strings.EqualFold(key, "vanilla") {
 				tempParams.VanillaOnly = true
 				tempParams.ModdedOnly = false
@@ -193,6 +197,24 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			tempParams.ServerList.Servers = tempServers
 			tempParams.ServersCount = len(tempServers)
 		}
+	}
+
+	if len(tempParams.FVersion) > 0 {
+		temp := tempParams.ServerList.Servers
+		tempParams.ServerList.Servers = []ServerListItem{}
+
+		count := 0
+		for _, item := range temp {
+			if item.Application_version.Game_version != tempParams.FVersion {
+				continue
+			}
+			count++
+			tempParams.ServerList.Servers = append(tempParams.ServerList.Servers, item)
+		}
+		if count == 0 {
+			tempParams.ServerList.Servers = []ServerListItem{}
+		}
+		tempParams.ServersCount = count
 	}
 
 	//Build a single page of results

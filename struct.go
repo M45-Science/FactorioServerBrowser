@@ -56,7 +56,7 @@ type ServerStateData struct {
 	SPlayers, SName, STime, SRTime    bool
 	VanillaOnly, ModdedOnly           bool
 
-	UserAgent, Version, Searched string
+	FVersion, UserAgent, Version, Searched string
 }
 
 type ServerMetaData struct {
