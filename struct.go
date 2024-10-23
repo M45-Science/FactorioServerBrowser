@@ -52,9 +52,9 @@ type ServerStateData struct {
 	CurrentPage,
 	ItemsPerPage int
 
-	FAll, FTag, FName, FDesc, FPlayer bool
-	SPlayers, SName, STime, SRTime    bool
-	VanillaOnly, ModdedOnly           bool
+	FTag, FName, FDesc, FPlayer    bool
+	SPlayers, SName, STime, SRTime bool
+	VanillaOnly, ModdedOnly        bool
 
 	FVersion, UserAgent, Version, Searched string
 }

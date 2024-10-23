@@ -112,6 +112,9 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 					tempParams.Searched = values[0]
 					tempParams.FDesc = true
 				} else if !filterFound && strings.EqualFold(key, "tag") {
+					if len(values[0]) == 0 {
+						continue
+					}
 					for s, server := range tempParams.ServerList.Servers {
 						for _, tag := range server.Tags {
 							if strings.EqualFold(values[0], tag) {
@@ -174,8 +177,6 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 		if filterFound {
 			tempParams.ServerList.Servers = sortServers(tempServersList, sortBy)
 			tempParams.ServersCount = len(tempServersList)
-		} else {
-			tempParams.FAll = true
 		}
 
 		if tempParams.ModdedOnly {

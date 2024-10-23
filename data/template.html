@@ -156,11 +156,17 @@
             const searchSelectedOption = searchType.value;
             const searchValue = encodeURIComponent(textField.value.trim());
 
+            var versTextField = document.getElementById('versField').value;
+            if (versTextField) {
+                versTextField = "&version="+versTextField;
+            }
+        
+
             const sortSelectedOption = sortType.value;
             const onlySelectedOption = onlyType.value;
 
             // Construct the URL with the tag value
-            const url = `?${searchSelectedOption}=${searchValue}&${sortSelectedOption}&${onlySelectedOption}`;
+            const url = `?${searchSelectedOption}=${searchValue}&${sortSelectedOption}&${onlySelectedOption}${versTextField}`;
 
             // Redirect to the constructed URL
             window.location.href = url;
@@ -238,7 +244,6 @@
                 <label>
                 Search by:<br>
                     <select id="searchType">
-                        <option value="all" {{if .FAll}}selected{{end}}>No Filter</option>
                         <option value="tag" {{if .FTag}}selected{{end}}>Tag</option>
                         <option value="name" {{if .FName}}selected{{end}}>Name</option>
                         <option value="desc" {{if .FDesc}}selected{{end}}>Description</option>
@@ -246,7 +251,10 @@
                     </select>
                 </label>
                 </div>
-
+                <label>Game Version:<br>
+                    <div class="form-group">
+                        <input type="text" id="versField" value="{{.FVersion}}">
+                    </div>
                 <label>Search:<br>
                 <div class="form-group">
                     <input type="text" id="textField" value="{{.Searched}}">
