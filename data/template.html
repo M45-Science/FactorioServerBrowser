@@ -256,8 +256,9 @@
                     Game version:<br>
                         <select id="versField">
                             <option value="">Any</option>
+                            {{ $outerVar := .FVersion }}
                             {{ range .VersionList }}
-                            <option value="{{ .Version }}">{{ .Version }} ({{ .Count }})</option>
+                            <option value="{{ .Version }}" {{ if eq $outerVar .Version }}selected{{end}}>{{ .Version }} ({{ .Count }})</option>
                             {{ end }}
                         </select>
                     </label>

@@ -57,7 +57,7 @@ type ServerStateData struct {
 	VanillaOnly, ModdedOnly        bool
 	VersionList                    []VersionData
 
-	FVersion, UserAgent, Version, Searched string
+	FVersion, UserAgent, Searched string
 }
 
 type VersionData struct {
