@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -68,6 +69,40 @@ func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
 	return list
 }
 
+// Sort servers by sortBy
+func sortVersions(list []VersionData) []VersionData {
+	sort.Slice(list, func(i, j int) bool {
+		if list[i].Count > list[j].Count {
+			return true
+		}
+		verA := parseVersion(list[i].Version)
+		verB := parseVersion(list[j].Version)
+		if verA.a > verB.a {
+			return true
+		}
+		if verA.a == verB.a && verA.b > verB.b {
+			return true
+		}
+		if verA.a == verB.a && verA.b == verB.b && verA.c > verB.c {
+			return true
+		}
+		return false
+	})
+	return list
+}
+
+func parseVersion(input string) versionInt {
+	parts := strings.Split(input, ".")
+	if len(parts) != 3 {
+		return versionInt{}
+	}
+	a, _ := strconv.ParseInt(parts[0], 10, 64)
+	b, _ := strconv.ParseInt(parts[1], 10, 64)
+	c, _ := strconv.ParseInt(parts[2], 10, 64)
+
+	return versionInt{a: int(a), b: int(b), c: int(c)}
+}
+
 // Update map time (string)
 func updateTime(mins int) string {
 	if mins == 0 {
@@ -109,4 +144,23 @@ func RemoveFactorioTags(input string) string {
 func MakeSteamURL(host string) string {
 	buf := fmt.Sprintf("https://go-game.net/gosteam/427520.--mp-connect%%20%v", host)
 	return buf
+}
+
+func getVersions() {
+
+	versionList := []VersionData{}
+	for _, server := range sParam.ServerList.Servers {
+		found := false
+		for v, vItem := range versionList {
+			if server.Application_version.Game_version == vItem.Version {
+				found = true
+				versionList[v].Count++
+			}
+		}
+		if !found {
+			versionList = append(versionList, VersionData{Version: server.Application_version.Game_version, Count: 1})
+		}
+	}
+
+	sParam.VersionList = sortVersions(versionList)
 }

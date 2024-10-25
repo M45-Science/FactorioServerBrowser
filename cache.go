@@ -47,8 +47,10 @@ func ReadServerCache() {
 
 			if len(tempServerList.Servers) > MinValidCount {
 				sParam.ServerList.Servers = sortServers(tempServerList.Servers, SORT_PLAYER)
+				getVersions()
 				sParam.LastRefresh = lastRefresh
 				sParam.ServersCount = len(tempServerList.Servers)
+
 				cwlog.DoLog(true, "Read cached server list.")
 			}
 			return

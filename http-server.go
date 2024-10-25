@@ -45,6 +45,7 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 		ServerList:   sParam.ServerList,
 		ServersCount: sParam.ServersCount,
 		ItemsPerPage: ItemsPerPage,
+		VersionList:  sParam.VersionList,
 	}
 
 	FetchLock.Unlock()

@@ -93,6 +93,7 @@ func fetchServerList() {
 		tempServerList[i].Local.Minutes = getMinutes(item)
 		tempServerList[i].Local.TimeStr = updateTime(mins)
 	}
+
 	//Sort list
 	tempServerList = sortServers(tempServerList, SORT_PLAYER)
 
@@ -107,6 +108,7 @@ func fetchServerList() {
 
 	//Apply temporary list to global list
 	sParam.ServerList.Servers = tempServerList
+	getVersions()
 	sParam.ServersCount = len(tempServerList)
 
 	//Write to cache file

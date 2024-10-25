@@ -251,10 +251,17 @@
                     </select>
                 </label>
                 </div>
-                <label>Game Version:<br>
-                    <div class="form-group">
-                        <input type="text" id="versField" value="{{.FVersion}}">
-                    </div>
+                <div class="form-group">
+                    <label>
+                    Game version:<br>
+                        <select id="versField">
+                            <option value="">Any</option>
+                            {{ range .VersionList }}
+                            <option value="{{ .Version }}">{{ .Version }} ({{ .Count }})</option>
+                            {{ end }}
+                        </select>
+                    </label>
+                </div>
                 <label>Search:<br>
                 <div class="form-group">
                     <input type="text" id="textField" value="{{.Searched}}">

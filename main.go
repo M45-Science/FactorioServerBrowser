@@ -20,13 +20,13 @@ const (
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
 
 	//How long to wait for list server
-	ReqTimeout = time.Second * 2
+	ReqTimeout = time.Second * 10
 	//How often we can make a request, including on error.
 	ReqThrottle = time.Second * 15
 	//How often we can refresh when new requests come in
 	RefreshInterval = time.Minute * 5
 	//Timeout before our http(s) servers time out
-	ServerTimeout = 5 * time.Second
+	ServerTimeout = 60 * time.Second
 
 	//How often to refresh if there are no requests
 	BGFetchInterval = time.Hour * 3

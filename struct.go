@@ -55,8 +55,18 @@ type ServerStateData struct {
 	FTag, FName, FDesc, FPlayer    bool
 	SPlayers, SName, STime, SRTime bool
 	VanillaOnly, ModdedOnly        bool
+	VersionList                    []VersionData
 
 	FVersion, UserAgent, Version, Searched string
+}
+
+type VersionData struct {
+	Version string
+	Count   int
+}
+
+type versionInt struct {
+	a, b, c int
 }
 
 type ServerMetaData struct {
