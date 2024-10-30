@@ -48,6 +48,7 @@ type ServerStateData struct {
 	LastRefresh                 time.Time
 	LastAttempt                 time.Time
 	ServersCount,
+	PlayerCount,
 	NumPages,
 	CurrentPage,
 	ItemsPerPage int

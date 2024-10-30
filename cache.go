@@ -53,12 +53,19 @@ func ReadServerCache() {
 
 				cwlog.DoLog(true, "Read cached server list.")
 			}
+
+			totalPlayers := 0
+			for _, item := range tempServerList.Servers {
+				totalPlayers = totalPlayers + len(item.Players)
+			}
+			sParam.PlayerCount = totalPlayers
 			return
 		} else {
 			cwlog.DoLog(true, "ReadServerList: Read file failure")
 			return
 		}
 	}
+
 }
 
 func WriteServerCache() {

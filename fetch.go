@@ -63,53 +63,59 @@ func fetchServerList() {
 	}
 
 	//Unmarshal into temporary list
-	tempServerList := []ServerListItem{}
-	jsonErr := json.Unmarshal(body, &tempServerList)
+	newServerList := []ServerListItem{}
+	jsonErr := json.Unmarshal(body, &newServerList)
 	if jsonErr != nil {
 		log.Fatal("fetch server list: " + jsonErr.Error() + "\n" + string(body))
 	}
 
 	//Remove Factorio tags
-	for i, item := range tempServerList {
+	for i, item := range newServerList {
 
-		tempServerList[i].Local.ConnectURL = MakeSteamURL(item.Host_address)
-		tempServerList[i].Name = RemoveFactorioTags(item.Name)
-		tempServerList[i].Description = RemoveFactorioTags(item.Description)
+		newServerList[i].Local.ConnectURL = MakeSteamURL(item.Host_address)
+		newServerList[i].Name = RemoveFactorioTags(item.Name)
+		newServerList[i].Description = RemoveFactorioTags(item.Description)
 		for t, tag := range item.Tags {
 			item.Tags[t] = RemoveFactorioTags(tag)
 		}
 
 		//If name is only tags, allow it.
-		if tempServerList[i].Name == "" {
-			tempServerList[i].Name = item.Name
+		if newServerList[i].Name == "" {
+			newServerList[i].Name = item.Name
 		}
 		//If server name is still nothing, put something into that field.
-		if tempServerList[i].Name == "" {
-			tempServerList[i].Name = "Unnamed Server"
+		if newServerList[i].Name == "" {
+			newServerList[i].Name = "Unnamed Server"
 		}
 		//Convert some of the data for web
-		tempServerList[i].Local.Modded = item.Mod_count > 0
+		newServerList[i].Local.Modded = item.Mod_count > 0
 		mins := getMinutes(item)
-		tempServerList[i].Local.Minutes = getMinutes(item)
-		tempServerList[i].Local.TimeStr = updateTime(mins)
+		newServerList[i].Local.Minutes = getMinutes(item)
+		newServerList[i].Local.TimeStr = updateTime(mins)
 	}
 
 	//Sort list
-	tempServerList = sortServers(tempServerList, SORT_PLAYER)
+	newServerList = sortServers(newServerList, SORT_PLAYER)
 
 	//Save last refresh time
 	sParam.LastRefresh = time.Now().UTC()
 	cwlog.DoLog(false, "Fetched server list at %v", time.Now())
 
 	//Skip if result seems invalid/small
-	if len(tempServerList) <= MinValidCount {
+	if len(newServerList) <= MinValidCount {
 		return
 	}
 
 	//Apply temporary list to global list
-	sParam.ServerList.Servers = tempServerList
+	sParam.ServerList.Servers = newServerList
+	sParam.ServersCount = len(sParam.ServerList.Servers)
 	getVersions()
-	sParam.ServersCount = len(tempServerList)
+
+	totalPlayers := 0
+	for _, item := range newServerList {
+		totalPlayers = totalPlayers + len(item.Players)
+	}
+	sParam.PlayerCount = totalPlayers
 
 	//Write to cache file
 	WriteServerCache()
