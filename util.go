@@ -61,7 +61,7 @@ func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
 			iNum := len(list[i].Players)
 			jNum := len(list[j].Players)
 			if iNum == jNum {
-				return list[i].Name < list[j].Name
+				return list[i].Name > list[j].Name
 			}
 			return iNum > jNum
 		})

@@ -114,12 +114,9 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 					tempParams.Searched = values[0]
 					tempParams.FDesc = true
 				} else if !filterFound && strings.EqualFold(key, "tag") {
-					if len(values[0]) == 0 {
-						continue
-					}
 					for s, server := range tempParams.ServerList.Servers {
 						for _, tag := range server.Tags {
-							if strings.EqualFold(values[0], tag) {
+							if len(values[0]) == 0 || strings.EqualFold(values[0], tag) {
 								tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
 								break
 							}
@@ -183,18 +180,18 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 
 		if tempParams.ModdedOnly {
 			var tempServers []ServerListItem
-			for s, server := range tempServersList {
+			for _, server := range tempParams.ServerList.Servers {
 				if server.Mod_count > 0 {
-					tempServers = append(tempServers, tempServersList[s])
+					tempServers = append(tempServers, server)
 				}
 			}
 			tempParams.ServerList.Servers = tempServers
 			tempParams.ServersCount = len(tempServers)
 		} else if tempParams.VanillaOnly {
 			var tempServers []ServerListItem
-			for s, server := range tempServersList {
+			for _, server := range tempParams.ServerList.Servers {
 				if server.Mod_count == 0 {
-					tempServers = append(tempServers, tempServersList[s])
+					tempServers = append(tempServers, server)
 				}
 			}
 			tempParams.ServerList.Servers = tempServers
