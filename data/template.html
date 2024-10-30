@@ -296,13 +296,13 @@
                             <span>, Time: {{ .Local.TimeStr }}</span>
 
                             {{ if .Local.Modded }}
-                            <span>, Mods Installed: {{ .Mod_count }}</span>
+                            <span>, <b>Mods Installed</b>: {{ .Mod_count }}</span>
                             {{ end }}
 
                             <span>, Version: {{ .Application_version.Game_version }}</span>
 
                             {{ if .Has_password }}
-                            <span>, Has Password</span>
+                            <span>, <b>Has Password</b></span>
                             {{ end }}
 
                             , (<a href="{{ .Local.ConnectURL }}">connect</a>)
