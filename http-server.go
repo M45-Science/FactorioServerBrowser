@@ -87,7 +87,9 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 
 			//Don't parse multiple searches
 			if !filterFound {
-				if strings.EqualFold(key, "all") {
+				if len(values[0]) == 0 {
+					tempServersList = tempParams.ServerList.Servers
+				} else if strings.EqualFold(key, "all") {
 					tempServersList = tempParams.ServerList.Servers
 					filterFound = true
 					tempParams.Searched = ""
@@ -97,6 +99,7 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 						lVal := strings.ToLower(values[0])
 						if strings.Contains(lName, lVal) {
 							tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
+							break
 						}
 					}
 					filterFound = true
@@ -108,6 +111,7 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 						lVal := strings.ToLower(values[0])
 						if strings.Contains(lDesc, lVal) {
 							tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
+							break
 						}
 					}
 					filterFound = true
@@ -116,7 +120,7 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 				} else if !filterFound && strings.EqualFold(key, "tag") {
 					for s, server := range tempParams.ServerList.Servers {
 						for _, tag := range server.Tags {
-							if len(values[0]) == 0 || strings.EqualFold(values[0], tag) {
+							if strings.EqualFold(values[0], tag) {
 								tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
 								break
 							}
@@ -210,9 +214,6 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			}
 			count++
 			tempParams.ServerList.Servers = append(tempParams.ServerList.Servers, item)
-		}
-		if count == 0 {
-			tempParams.ServerList.Servers = []ServerListItem{}
 		}
 		tempParams.ServersCount = count
 	}
