@@ -150,14 +150,15 @@ func getVersions() {
 
 	versionList := []VersionData{}
 	for _, server := range sParam.ServerList.Servers {
-		found := false
+		foundVersion := false
 		for v, vItem := range versionList {
 			if server.Application_version.Game_version == vItem.Version {
-				found = true
+				foundVersion = true
 				versionList[v].Count++
+				break
 			}
 		}
-		if !found {
+		if !foundVersion {
 			versionList = append(versionList, VersionData{Version: server.Application_version.Game_version, Count: 1})
 		}
 	}
