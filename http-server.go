@@ -100,80 +100,32 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 					if values[0] == "" {
 						continue
 					}
-
-					var tempServers []ServerListItem
 					tempParams.Searched = values[0]
-					tempParams.SName = true
-
-					lVal := strings.ToLower(values[0])
-					for s, server := range tempParams.ServerList.Servers {
-						lName := strings.ToLower(server.Name)
-						if strings.Contains(lName, lVal) {
-							tempServers = append(tempServers, tempParams.ServerList.Servers[s])
-						}
-					}
-					tempParams.ServerList.Servers = tempServers
+					tempParams.FName = true
 
 				} else if strings.EqualFold(key, "desc") {
 					filterFound = true
 					if values[0] == "" {
 						continue
 					}
-
-					var tempServers []ServerListItem
 					tempParams.Searched = values[0]
 					tempParams.FDesc = true
-
-					lVal := strings.ToLower(values[0])
-					for s, server := range tempParams.ServerList.Servers {
-						lDesc := strings.ToLower(server.Description)
-						if strings.Contains(lDesc, lVal) {
-							tempServers = append(tempServers, tempParams.ServerList.Servers[s])
-						}
-					}
-					tempParams.ServerList.Servers = tempServers
 
 				} else if strings.EqualFold(key, "tag") {
 					filterFound = true
 					if values[0] == "" {
 						continue
 					}
-
-					var tempServers []ServerListItem
 					tempParams.Searched = values[0]
 					tempParams.FTag = true
-
-					for s, server := range tempParams.ServerList.Servers {
-						for _, tag := range server.Tags {
-							if strings.EqualFold(values[0], tag) {
-								tempServers = append(tempServers, tempParams.ServerList.Servers[s])
-								break
-							}
-						}
-					}
-					tempParams.ServerList.Servers = tempServers
 
 				} else if strings.EqualFold(key, "player") {
 					filterFound = true
 					if values[0] == "" {
 						continue
 					}
-
-					var tempServers []ServerListItem
 					tempParams.Searched = values[0]
 					tempParams.FPlayer = true
-
-					lVal := strings.ToLower(values[0])
-					for s, server := range tempParams.ServerList.Servers {
-						for _, player := range server.Players {
-							lPlayer := strings.ToLower(player)
-							if strings.Contains(lPlayer, lVal) {
-								tempServers = append(tempServers, tempParams.ServerList.Servers[s])
-								break
-							}
-						}
-					}
-					tempParams.ServerList.Servers = tempServers
 				}
 			}
 
@@ -214,13 +166,11 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 
 func filterServers(tempParams *ServerStateData) {
 	var tempServers []ServerListItem
+	lSearch := strings.ToLower(tempParams.Searched)
 	for _, server := range tempParams.ServerList.Servers {
-		if tempParams.ModdedOnly && !server.Local.Modded {
-			continue
-		}
-		if tempParams.VanillaOnly && server.Local.Modded {
-			continue
-		}
+
+		//Order: Fastest compairsons that remove the most items first.
+		//Password
 		if !tempParams.AnyPass {
 			if tempParams.HasPass && !server.Has_password {
 				continue
@@ -229,16 +179,76 @@ func filterServers(tempParams *ServerStateData) {
 				continue
 			}
 		}
+
+		//Players
 		if tempParams.HasPlay && !server.Local.HasPlayers {
 			continue
 		}
 		if tempParams.NoPlay && server.Local.HasPlayers {
 			continue
 		}
+
+		//Modded
+		if tempParams.ModdedOnly && !server.Local.Modded {
+			continue
+		}
+		if tempParams.VanillaOnly && server.Local.Modded {
+			continue
+		}
+
+		//Version
 		if tempParams.FVersion != "" &&
 			server.Application_version.Game_version != tempParams.FVersion {
 			continue
 		}
+
+		//Search Type
+		if lSearch != "" {
+			if tempParams.FName {
+				if server.Name == "" {
+					continue
+				}
+				if !strings.Contains(strings.ToLower(server.Name), lSearch) {
+					continue
+				}
+			} else if tempParams.FDesc {
+				if server.Description == "" {
+					continue
+				}
+				if !strings.Contains(strings.ToLower(server.Description), lSearch) {
+					continue
+				}
+			} else if tempParams.FTag {
+				found := false
+				for _, tag := range server.Tags {
+					if tag == "" {
+						continue
+					}
+					if strings.Contains(strings.ToLower(tag), lSearch) {
+						found = true
+						break
+					}
+				}
+				if !found {
+					continue
+				}
+			} else if tempParams.FPlayer {
+				found := false
+				for _, player := range server.Players {
+					if player == "" {
+						continue
+					}
+					if strings.Contains(strings.ToLower(player), lSearch) {
+						found = true
+						break
+					}
+				}
+				if !found {
+					continue
+				}
+			}
+		}
+
 		tempServers = append(tempServers, server)
 	}
 	tempParams.ServerList.Servers = tempServers
