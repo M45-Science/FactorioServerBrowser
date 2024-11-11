@@ -89,11 +89,17 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			if !filterFound {
 				if len(values[0]) == 0 {
 					tempServersList = tempParams.ServerList.Servers
-				} else if strings.EqualFold(key, "all") {
-					tempServersList = tempParams.ServerList.Servers
 					filterFound = true
-					tempParams.Searched = ""
+					tempParams.Searched = values[0]
+					tempParams.FTag = true
 				} else if !filterFound && strings.EqualFold(key, "name") {
+					filterFound = true
+					tempParams.Searched = values[0]
+					tempParams.SName = true
+					if values[0] == "" {
+						tempServersList = tempParams.ServerList.Servers
+						continue
+					}
 					for s, server := range tempParams.ServerList.Servers {
 						lName := strings.ToLower(server.Name)
 						lVal := strings.ToLower(values[0])
@@ -102,10 +108,14 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							break
 						}
 					}
+				} else if !filterFound && strings.EqualFold(key, "desc") {
 					filterFound = true
 					tempParams.Searched = values[0]
-					tempParams.SName = true
-				} else if !filterFound && strings.EqualFold(key, "desc") {
+					tempParams.FDesc = true
+					if values[0] == "" {
+						tempServersList = tempParams.ServerList.Servers
+						continue
+					}
 					for s, server := range tempParams.ServerList.Servers {
 						lDesc := strings.ToLower(server.Description)
 						lVal := strings.ToLower(values[0])
@@ -114,10 +124,14 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							break
 						}
 					}
+				} else if !filterFound && strings.EqualFold(key, "tag") {
 					filterFound = true
 					tempParams.Searched = values[0]
-					tempParams.FDesc = true
-				} else if !filterFound && strings.EqualFold(key, "tag") {
+					tempParams.FTag = true
+					if values[0] == "" {
+						tempServersList = tempParams.ServerList.Servers
+						continue
+					}
 					for s, server := range tempParams.ServerList.Servers {
 						for _, tag := range server.Tags {
 							if strings.EqualFold(values[0], tag) {
@@ -126,10 +140,14 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 					}
+				} else if !filterFound && strings.EqualFold(key, "player") {
 					filterFound = true
 					tempParams.Searched = values[0]
-					tempParams.FTag = true
-				} else if !filterFound && strings.EqualFold(key, "player") {
+					tempParams.FPlayer = true
+					if values[0] == "" {
+						tempServersList = tempParams.ServerList.Servers
+						continue
+					}
 					for s, server := range tempParams.ServerList.Servers {
 						for _, player := range server.Players {
 							lPlayer := strings.ToLower(player)
@@ -140,9 +158,6 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 					}
-					filterFound = true
-					tempParams.Searched = values[0]
-					tempParams.FPlayer = true
 				}
 			}
 
@@ -177,10 +192,8 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			tempParams.SPlayers = true
 		}
 
-		if filterFound {
-			tempParams.ServerList.Servers = sortServers(tempServersList, sortBy)
-			tempParams.ServersCount = len(tempServersList)
-		}
+		tempParams.ServerList.Servers = sortServers(tempServersList, sortBy)
+		tempParams.ServersCount = len(tempServersList)
 
 		if tempParams.ModdedOnly {
 			var tempServers []ServerListItem
