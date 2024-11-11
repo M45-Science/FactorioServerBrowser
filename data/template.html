@@ -43,6 +43,7 @@
             text-shadow: 0px 0px 10px rgba(230, 126, 34, 0.8);
             display: flex;
             align-items: center;
+            margin-bottom: 10px;
         }
 
         .logo {
@@ -53,27 +54,25 @@
         .subtitle {
             font-size: 0.85em;
             color: #a0a0a0;
-            margin-bottom: 10px;
         }
 
-        .stats {
-            font-size: 0.9em;
-            color: #a0a0a0;
-            margin: 0 15px;
-        }
-
-        .search-container {
+        .top-bar {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             background: #3b3b3b;
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0px 0px 0px 2px #e67e22 inset;
             width: 100%;
-            max-width: 1000px;
-            justify-content: space-evenly;
+            max-width: 1200px;
             color: #e0e0e0;
-            margin-top: 10px;
+        }
+
+        .stats {
+            font-size: 0.9em;
+            color: #a0a0a0;
+            margin: 0 10px;
         }
 
         .form-group {
@@ -99,11 +98,7 @@
         .pagination-box {
             display: flex;
             align-items: center;
-            background-color: #3b3b3b;
-            padding: 8px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 0px 2px #e67e22 inset;
-            margin-left: 10px;
+            margin-left: auto;
         }
 
         .pagination-box span {
@@ -165,7 +160,7 @@
         }
 
         .content-container {
-            padding-top: 220px;
+            padding-top: 200px;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -226,9 +221,10 @@
         </h1>
         <p class="subtitle">By <a href="https://go-game.net" target="_blank">go-game.net</a></p>
         
-        <div class="search-container">
+        <div class="top-bar">
             <span class="stats">Matches Found: {{ .ServersCount }}</span>
             <span class="stats">Players Online: {{ .PlayerCount }}</span>
+            
             <div class="form-group">
                 <label>Sort by:</label>
                 <select id="sortType">
@@ -238,6 +234,7 @@
                     <option value="sort-rtime" {{if .SRTime}}selected{{end}}>Minutes: Older</option>
                 </select>
             </div>
+            
             <div class="form-group">
                 <label>Mods:</label>
                 <select id="onlyType">
@@ -246,6 +243,7 @@
                     <option value="modded" {{if .ModdedOnly}}selected{{end}}>Yes (Modded)</option>
                 </select>
             </div>
+            
             <div class="form-group">
                 <label>Search by:</label>
                 <select id="searchType">
@@ -255,6 +253,7 @@
                     <option value="player" {{if .FPlayer}}selected{{end}}>Player Name</option>
                 </select>
             </div>
+            
             <div class="form-group">
                 <label>Version:</label>
                 <select id="versField">
@@ -265,16 +264,18 @@
                     {{ end }}
                 </select>
             </div>
+            
             <div class="form-group">
                 <input type="text" id="textField" value="{{.Searched}}" placeholder="Search...">
             </div>
+            
             <button onclick="goToUrl()">Go</button>
-        </div>
-
-        <div class="pagination-box">
-            <button onclick="goPrevPage()">&lt;</button>
-            <span>Page: {{ .CurrentPage }} / {{ .NumPages }}</span>
-            <button onclick="goNextPage({{ .NumPages }})">&gt;</button>
+            
+            <div class="pagination-box">
+                <button onclick="goPrevPage()">&lt;</button>
+                <span>Page: {{ .CurrentPage }} / {{ .NumPages }}</span>
+                <button onclick="goNextPage({{ .NumPages }})">&gt;</button>
+            </div>
         </div>
     </div>
 
