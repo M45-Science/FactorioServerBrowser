@@ -80,7 +80,8 @@ func main() {
 	setupDurafmt()
 
 	//Read cache.json
-	ReadServerCache()
+	//ReadServerCache()
+	fetchServerList()
 
 	//Parse template.html
 	parseTemplate()
