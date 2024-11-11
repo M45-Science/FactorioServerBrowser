@@ -85,33 +85,15 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 				tempParams.ModdedOnly = false
 			}
 
-			if strings.EqualFold(key, "haspass") {
-				tempParams.HasPass = true
-			} else if strings.EqualFold(key, "anypass") {
-				tempParams.AnyPass = true
-			}
-
-			if strings.EqualFold(key, "hasplay") {
-				tempParams.HasPlay = true
-			} else if strings.EqualFold(key, "noplay") {
-				tempParams.NoPlay = true
-			}
-
 			//Don't parse multiple searches
 			if !filterFound {
 				if len(values[0]) == 0 {
 					tempServersList = tempParams.ServerList.Servers
+				} else if strings.EqualFold(key, "all") {
+					tempServersList = tempParams.ServerList.Servers
 					filterFound = true
-					tempParams.Searched = values[0]
-					tempParams.FTag = true
+					tempParams.Searched = ""
 				} else if !filterFound && strings.EqualFold(key, "name") {
-					filterFound = true
-					tempParams.Searched = values[0]
-					tempParams.SName = true
-					if values[0] == "" {
-						tempServersList = tempParams.ServerList.Servers
-						continue
-					}
 					for s, server := range tempParams.ServerList.Servers {
 						lName := strings.ToLower(server.Name)
 						lVal := strings.ToLower(values[0])
@@ -120,14 +102,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							break
 						}
 					}
-				} else if !filterFound && strings.EqualFold(key, "desc") {
 					filterFound = true
 					tempParams.Searched = values[0]
-					tempParams.FDesc = true
-					if values[0] == "" {
-						tempServersList = tempParams.ServerList.Servers
-						continue
-					}
+					tempParams.SName = true
+				} else if !filterFound && strings.EqualFold(key, "desc") {
 					for s, server := range tempParams.ServerList.Servers {
 						lDesc := strings.ToLower(server.Description)
 						lVal := strings.ToLower(values[0])
@@ -136,14 +114,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							break
 						}
 					}
-				} else if !filterFound && strings.EqualFold(key, "tag") {
 					filterFound = true
 					tempParams.Searched = values[0]
-					tempParams.FTag = true
-					if values[0] == "" {
-						tempServersList = tempParams.ServerList.Servers
-						continue
-					}
+					tempParams.FDesc = true
+				} else if !filterFound && strings.EqualFold(key, "tag") {
 					for s, server := range tempParams.ServerList.Servers {
 						for _, tag := range server.Tags {
 							if strings.EqualFold(values[0], tag) {
@@ -152,14 +126,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 					}
-				} else if !filterFound && strings.EqualFold(key, "player") {
 					filterFound = true
 					tempParams.Searched = values[0]
-					tempParams.FPlayer = true
-					if values[0] == "" {
-						tempServersList = tempParams.ServerList.Servers
-						continue
-					}
+					tempParams.FTag = true
+				} else if !filterFound && strings.EqualFold(key, "player") {
 					for s, server := range tempParams.ServerList.Servers {
 						for _, player := range server.Players {
 							lPlayer := strings.ToLower(player)
@@ -170,6 +140,9 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 					}
+					filterFound = true
+					tempParams.Searched = values[0]
+					tempParams.FPlayer = true
 				}
 			}
 
@@ -204,70 +177,30 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			tempParams.SPlayers = true
 		}
 
-		tempParams.ServerList.Servers = sortServers(tempServersList, sortBy)
-		tempParams.ServersCount = len(tempServersList)
-	}
+		if filterFound {
+			tempParams.ServerList.Servers = sortServers(tempServersList, sortBy)
+			tempParams.ServersCount = len(tempServersList)
+		}
 
-	if tempParams.ModdedOnly {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if server.Mod_count > 0 {
-				tempServers = append(tempServers, server)
+		if tempParams.ModdedOnly {
+			var tempServers []ServerListItem
+			for _, server := range tempParams.ServerList.Servers {
+				if server.Mod_count > 0 {
+					tempServers = append(tempServers, server)
+				}
 			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	} else if tempParams.VanillaOnly {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if server.Mod_count == 0 {
-				tempServers = append(tempServers, server)
+			tempParams.ServerList.Servers = tempServers
+			tempParams.ServersCount = len(tempServers)
+		} else if tempParams.VanillaOnly {
+			var tempServers []ServerListItem
+			for _, server := range tempParams.ServerList.Servers {
+				if server.Mod_count == 0 {
+					tempServers = append(tempServers, server)
+				}
 			}
+			tempParams.ServerList.Servers = tempServers
+			tempParams.ServersCount = len(tempServers)
 		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	}
-
-	if tempParams.AnyPass {
-		//
-	} else if tempParams.HasPass {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if server.Has_password {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	} else {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if !server.Has_password {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	}
-
-	if tempParams.HasPlay {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if len(server.Players) > 0 {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	} else if tempParams.NoPlay {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if len(server.Players) == 0 {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
 	}
 
 	if len(tempParams.FVersion) > 0 {

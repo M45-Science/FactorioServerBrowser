@@ -4,411 +4,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M45-Science: Factorio Server Browser</title>
+    <title>Factorio Server Listings</title>
     <style>
         body {
             font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
             margin: 0;
             padding: 0;
             background-color: #121212;
+            /* Dark background color */
             color: #e0e0e0;
+            /* Light text color */
         }
 
-        a {
-            color: #e67e22;
+        a:link {
+            color: rgb(78, 204, 226);
+            background-color: transparent;
+            text-decoration: none;
+        }
+
+        a:visited {
+            color: pink;
+            background-color: transparent;
             text-decoration: none;
         }
 
         a:hover {
-            color: #f39c12;
+            color: rgb(255, 102, 102);
+            background-color: transparent;
             text-decoration: underline;
         }
 
-        .top-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0 0;
-            background: #1e1e1e;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.7);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 100;
+        a:active {
+            color: yellow;
+            background-color: transparent;
+            text-decoration: underline;
         }
 
-        .title {
-            font-size: 1.8em;
-            color: #e67e22;
-            text-shadow: 0px 0px 10px rgba(230, 126, 34, 0.8);
-            display: flex;
-            align-items: center;
-            margin-bottom: 6;
-        }
-
-        .logo {
-            height: 40px;
-            margin-right: 10px;
-        }
-
-        .subtitle {
-            font-size: 0.85em;
-            color: #a0a0a0;
-            margin-bottom: 10px;
-        }
-
-        .top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #3b3b3b;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 0px 2px #e67e22 inset;
-            width: 100%;
+        .container {
             max-width: 1200px;
-            color: #e0e0e0;
-            margin-bottom: 16px;
-        }
-
-        .stats {
-            font-size: 0.9em;
-            color: #a0a0a0;
-            margin: 0 10px;
-        }
-
-        .form-group {
-            margin: 0 10px;
-            text-align: center;
-        }
-
-        .form-group label {
-            color: #a0a0a0;
-            font-size: 0.85em;
-        }
-
-        .form-group select,
-        .form-group input {
-            padding: 2px;
-            border-radius: 4px;
-            border: none;
-            background-color: #2d2d2d;
-            color: #e0e0e0;
-            max-width: 100%;
-        }
-
-        .pagination-box {
-            display: flex;
-            align-items: center;
-            margin-left: 20px;
-        }
-
-        .pagination-box span {
-            color: #e0e0e0;
-            font-size: 0.9em;
-            margin: 0 5px;
-        }
-
-        .pagination-box button {
-            padding: 5px 10px;
-            background-color: #e67e22;
-            color: #1e1e1e;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .pagination-box button:hover {
-            background-color: #f39c12;
-        }
-
-        .server-card {
-            background: #2a2a2a;
-            margin: 20px;
+            margin: 20px auto;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.6);
+            background: #1e1e1e;
+            /* Slightly lighter background for the container */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .server-item {
+            border-bottom: 1px solid #333;
+            padding: 10px 0;
+        }
+
+        .server-item:last-child {
+            border-bottom: none;
+        }
+
+        .server-header {
             display: flex;
-            flex-direction: row;
             justify-content: space-between;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: 2px solid transparent;
-            position: relative;
-        }
-
-        .server-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0px 4px 20px rgba(78, 204, 226, 0.8);
-            border-color: #e67e22;
-        }
-
-        .server-card.password-protected {
-            background: rgb(31, 31, 31);
-        }
-
-        .server-card:hover::after {
-            content: "Click to connect!";
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            font-size: 0.85em;
-            color: #e67e22;
-        }
-
-        .server-info {
-            width: 300px;
-            font-size: 0.9em;
-            color: #b0b0b0;
-            line-height: 2em;
-            padding-right: 16px;
-        }
-
-        .server-details {
-            color: #c0c0c0;
-            font-size: 0.9em;
-            line-height: 1.4em;
-            flex: 1;
-            padding-right: 16px;
+            align-items: center;
         }
 
         .server-title {
-            font-size: 1.6em;
+            font-size: 1.5em;
+            margin: 0;
             color: #f5f5f5;
-            margin-bottom: 5px;
+            /* Light color for the title */
         }
 
-        .highlight {
-            color: #e67e22;
+        .server-meta {
+            color: #b0b0b0;
+            /* Lighter gray for meta information */
+        }
+
+        .server-details {
+            margin-top: 10px;
+        }
+
+        .mod-list,
+        .player-list,
+        .desc,
+        .tag-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .mod-list li,
+        .player-list li,
+        .desc li,
+        .tag-list li {
+            background: #333;
+            /* Dark background for list items */
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+
+        .mod-list li {
             font-weight: bold;
         }
-        .highlightRed {
-            color: #ff4242;
-            font-weight: bold;
-        }
-        .highlightWhite {
-            color: #bbbbbb;
-            font-size: 1.25em
+
+        .mod-list li span {
+            font-weight: normal;
+            color: #888;
+            /* Lighter gray for version text */
         }
 
-
-        .right-meta {
+        .server-footer {
+            color: #888;
+            /* Lighter gray for footer text */
             font-size: 0.9em;
-            color: #cccccc;
-            text-align: right;
+            margin-top: 20px;
         }
 
-        .content-container {
-            padding-top: 220px;
-            max-width: 1200px;
-            margin: 0 auto;
+        .search-container {
+            background: #3b3b3b;
+            margin: 20px;
+            padding: 20px;
+            width: min-content;
+            margin-right: auto;
+            height: fit-content;
         }
 
-        .spacing {
-            margin-top: 5px;
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+
+        /* Add a smooth transition for color changes */
+        body,
+        .container,
+        .server-item,
+        .server-header,
+        .server-title,
+        .server-meta,
+        .server-details,
+        .mod-list li,
+        .player-list li,
+        .desc li,
+        .tag-list li,
+        .server-footer {
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .top-section{
+            display: flex;
         }
     </style>
     <script>
-    function goToUrl() {
-        const searchTextField = document.getElementById('textField');
-        const searchSelectedOption = document.getElementById('searchType').value;
-        const searchValue = searchTextField.value.trim();
+        function goToUrl() {
+            const searchTextField = document.getElementById('textField');
+            const searchSelectedOption = searchType.value;
+            const searchValue = encodeURIComponent(textField.value.trim());
 
-        const versTextField = document.getElementById('versField').value ? `version=${encodeURIComponent(document.getElementById('versField').value)}` : '';
-        const sortSelectedOption = document.getElementById('sortType').value;
-        const onlySelectedOption = document.getElementById('onlyType').value;
-        const passSelectedOption = document.getElementById('passType').value;
-        const playSelectedOption = document.getElementById('playType').value;
+            var versTextField = document.getElementById('versField').value;
+            if (versTextField) {
+                versTextField = "&version="+versTextField;
+            }
+        
 
-        // Initialize an array to hold URL parameters
-        const params = [];
+            const sortSelectedOption = sortType.value;
+            const onlySelectedOption = onlyType.value;
 
-        // Add search parameter only if it has a non-empty value
-        if (searchValue) {
-            params.push(`${searchSelectedOption}=${encodeURIComponent(searchValue)}`);
+            // Construct the URL with the tag value
+            const url = `?${searchSelectedOption}=${searchValue}&${sortSelectedOption}&${onlySelectedOption}${versTextField}`;
+
+            // Redirect to the constructed URL
+            window.location.href = url;
         }
-
-        // Add version parameter if it is present
-        if (versTextField) {
-            params.push(versTextField);
-        }
-
-        // Add sort option if it is not the default 'sort-players'
-        if (sortSelectedOption !== 'sort-players') {
-            params.push(sortSelectedOption);
-        }
-
-        // Add only option if it is not the default 'both'
-        if (onlySelectedOption !== 'both') {
-            params.push(onlySelectedOption);
-        }
-
-        // Add pass option if it is not the default 'nopass'
-        if (passSelectedOption !== 'nopass') {
-            params.push(passSelectedOption);
-        }
-
-        // Add play option if it is not the default 'anyplay'
-        if (playSelectedOption !== 'anyplay') {
-            params.push(playSelectedOption);
-        }
-
-        // Build the final URL with only necessary parameters
-        const url = `?${params.join('&')}`;
-        window.location.href = url;
-    }
 
         function goNextPage(maxPage) {
             const currentUrl = new URL(window.location.href);
-            const currentPage = {{ .CurrentPage }};
-            const nextPage = currentPage + 1;
+            let currentPage = {{ .CurrentPage }};
 
-            if (nextPage <= maxPage) {
-                currentUrl.searchParams.set('page', nextPage);
-                window.location.href = currentUrl.toString();
-            }
+        const nextPage = currentPage + 1;
+
+        if (nextPage <= maxPage) {
+            currentUrl.searchParams.set('page', nextPage);
+            window.location.href = currentUrl.toString();
+        }
         }
 
         function goPrevPage() {
             const currentUrl = new URL(window.location.href);
-            const currentPage = {{ .CurrentPage }};
-            const prevPage = currentPage - 1;
+            let currentPage = {{ .CurrentPage }};
 
-            if (prevPage > 0) {
-                currentUrl.searchParams.set('page', prevPage);
-                window.location.href = currentUrl.toString();
-            }
+        const nextPage = currentPage - 1;
+        if (nextPage > 0) {
+            currentUrl.searchParams.set('page', nextPage);
+            window.location.href = currentUrl.toString();
+        }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const serverCards = document.querySelectorAll('.server-card');
-            serverCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    const connectUrl = card.getAttribute('data-url');
-                    window.location.href = connectUrl;
-                });
-            });
+            const maxPage = {{ .NumPages }};
+
+        document.querySelectorAll('.nextPageButton').forEach(button => {
+            button.addEventListener('click', () => goNextPage(maxPage));
+        })
         });
     </script>
 </head>
 
 <body>
-    <div class="top-section">
-        <h1 class="title">
-            <img src="https://m45sci.xyz/m45-2024b-128.png" alt="M45-Science logo" class="logo">
-            <a href="https://m45sci.xyz" target="_blank">M45-Science</a>: Factorio Server Browser
-        </h1>
-        <p class="subtitle">[<a href="https://go-game.net" target="_blank">go-game.net</a>] [<a href="changelog.html">ChangeLog</a>] [<a href="https://github.com/M45-Science/goFactorioServerViewer">Git</a>] -- Players Online: {{ .PlayerCount }} -- NOT affiliated with <a href="https://www.factorio.com/game/about" target="_blank">Wube Software</a>.</p>        
-        <div class="top-bar">
-            <div class="form-group">
-                <label>Sort by:</label>
-                <select id="sortType">
-                    <option value="sort-players" {{if .SPlayers}}selected{{end}}>Player count</option>
-                    <option value="sort-name" {{if .SName}}selected{{end}}>Name</option>
-                    <option value="sort-time" {{if .STime}}selected{{end}}>Minutes: Newer</option>
-                    <option value="sort-rtime" {{if .SRTime}}selected{{end}}>Minutes: Older</option>
-                </select>
+    <div class="container">
+        <div class="top-section">
+            <div class="info-section">
+                <h1>Factorio Server Listings</h1>
+                {{ .UserAgent }}<br><br>
+                Brought to you by <a href="https://go-game.net">go-game.net</a> and <a href="https://m45sci.xyz">M45-Science</a>.<br>
+                Factorio <a href="https://forums.factorio.com/viewtopic.php?t=114565">forum post</a>,
+                <a href="https://github.com/M45-Science/goFactorioServerViewer">Github repo</a>,
+                <a href="changelog.html">Change-log</a><br>
+                    Factorio wiki: <a href="https://wiki.factorio.com/Matchmaking_API">Matchmaking API</a><br><br>
+                    (We are not affiliated with <a href="https://www.factorio.com/game/about">Wube Software</a>.)
+                </p>
             </div>
-            
-            <div class="form-group">
-                <label>Mods:</label>
-                <select id="onlyType">
-                    <option value="both">Any</option>
-                    <option value="vanilla" {{if .VanillaOnly}}selected{{end}}>No (Vanilla)</option>
-                    <option value="modded" {{if .ModdedOnly}}selected{{end}}>Yes (Modded)</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Password:</label>
-                <select id="passType">
-                    <option value="nopass">No Password</option>
-                    <option value="haspass" {{if .HasPass}}selected{{end}}>Has Password</option>
-                    <option value="anypass" {{if .AnyPass}}selected{{end}}>Either</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Players:</label>
-                <select id="playType">
-                    <option value="anyplay">Any</option>
-                    <option value="hasplay" {{if .HasPlay}}selected{{end}}>Has Players</option>
-                    <option value="noplay" {{if .NoPlay}}selected{{end}}>No Players</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Search by:</label>
-                <select id="searchType">
-                    <option value="tag" {{if .FTag}}selected{{end}}>Tag</option>
-                    <option value="name" {{if .FName}}selected{{end}}>Name</option>
-                    <option value="desc" {{if .FDesc}}selected{{end}}>Description</option>
-                    <option value="player" {{if .FPlayer}}selected{{end}}>Player Name</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Version:</label>
-                <select id="versField">
-                    <option value="">Any</option>
-                    {{ $outerVar := .FVersion }}
-                    {{ range .VersionList }}
-                    <option value="{{ .Version }}" {{ if eq $outerVar .Version }}selected{{end}}>{{ .Version }} ({{ .Count }})</option>
-                    {{ end }}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Search:</label>
-                <input type="text" id="textField" value="{{.Searched}}" placeholder="Search...">
-            </div>
-            
-            <button onclick="goToUrl()">Go</button>
-            
-            <div class="pagination-box">
-                <button onclick="goPrevPage()">&lt;</button>
-                <span>Page: {{ .CurrentPage }} / {{ .NumPages }}</span>
-                <button onclick="goNextPage({{ .NumPages }})">&gt;</button>
-            </div>
-
-    <span class="stats">Results: {{ .ServersCount }}</span>
-
-        </div>
-    </div>
-    <div class="content-container">
-        {{ range .ServerList.Servers }}
-        <div class="server-card {{ if .Has_password }}password-protected{{ end }}" data-url="{{ .Local.ConnectURL }}">
-            <div class="server-info">
-                <div class="server-title">{{ .Name }}</div>
-                {{ if gt (len .Players) 0 }}
-                    <div class="highlight">Players: {{ len .Players }}</div>
-                {{ else }}
-                <div class="highlightRed">Players: NONE</div>
-                {{ end }}
-                {{ if gt .Mod_count 0 }}
-                    <div class="highlight">Mods: {{ .Mod_count }}</div>
-                    {{ else }}
-                    <div>Vanilla</div>
-                {{ end }}
-            </div>
-            <div class="server-details">
-                {{ if .Description }}
-                    <div>Description: {{ .Description }}</div>
-                {{ end }}
-                {{ if .Tags }}
-                    <div class="spacing">Tags: {{ range .Tags }}{{ . }}, {{ end }}</div>
-                {{ end }}
-            </div>
-            <div class="right-meta">
-                {{ if .Has_password }}
-                    <div class="highlightRed">🔒 Has Password</div><br>
-                {{ end }}
-                <div>Time: {{ .Local.TimeStr }}</div>
-                <div>Version: {{ .Application_version.Game_version }}</div>
+            <div class="search-container">
+                    <div class="form-group">
+                    <label>
+                <label>Sort by:<br>
+                    <select id="sortType">
+                        <option value="sort-players"  {{if .SPlayers}}selected{{end}}>Player count</option>
+                        <option value="sort-name" {{if .SName}}selected{{end}}>Name</option>
+                        <option value="sort-time" {{if .STime}}selected{{end}}>Minutes: Newer</option>
+                        <option value="sort-rtime" {{if .SRTime}}selected{{end}}>Minutes: Older</option>
+                    </select>
+                </label>
+                </div>
+                <div class="form-group">
+                    <label>Mods installed:<br>
+                        <select id="onlyType">
+                            <option value="both">Any</option>
+                            <option value="vanilla" {{if .VanillaOnly}}selected{{end}}>No (Vanilla)</option>
+                            <option value="modded" {{if .ModdedOnly}}selected{{end}}>Yes (Modded)</option>
+                        </select>
+                    </label>
+                    </div>
+                <div class="form-group">
+                <label>
+                Search by:<br>
+                    <select id="searchType">
+                        <option value="tag" {{if .FTag}}selected{{end}}>Tag</option>
+                        <option value="name" {{if .FName}}selected{{end}}>Name</option>
+                        <option value="desc" {{if .FDesc}}selected{{end}}>Description</option>
+                        <option value="player" {{if .FPlayer}}selected{{end}}>Player Name</option>
+                    </select>
+                </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                    Game version:<br>
+                        <select id="versField">
+                            <option value="">Any</option>
+                            {{ $outerVar := .FVersion }}
+                            {{ range .VersionList }}
+                            <option value="{{ .Version }}" {{ if eq $outerVar .Version }}selected{{end}}>{{ .Version }} ({{ .Count }})</option>
+                            {{ end }}
+                        </select>
+                    </label>
+                </div>
+                <label>Search:<br>
+                <div class="form-group">
+                    <input type="text" id="textField" value="{{.Searched}}">
+                </div>
+                </label>
+                <div class="form-group">
+                    <button type="submit" onclick="goToUrl()">Go</button>
+                </div>
             </div>
         </div>
-        {{ end }}
+        Matches found: {{ .ServersCount }}<br>
+        Players online: {{ .PlayerCount }}<br>
+        {{ if .LastRefresh }}
+        Last refreshed: {{ .LastRefresh.Format "2006-01-02 15:04:05 UTC" }}<br>
+        {{ end }}<br>
+        {{ if .ServersCount }}
+        Page: {{ .CurrentPage }} / {{ .NumPages }}
+        <button type="submit" onclick="goPrevPage()"><</button> <button type="submit" class="nextPageButton">></button>
+                {{ end }}
+                {{ range .ServerList.Servers }}
+                <div class="server-item">
+                    <div class="server-header">
+                        <h2 class="server-title">{{ .Name }}</h2>
+                        <div class="server-meta">
+                            {{ if len .Players }}
+                            <span>Players: {{ len .Players }}</span>
+                            {{ else }}
+                            <span>Players: None</span>
+                            {{ end }}
+
+                            <span>, Time: {{ .Local.TimeStr }}</span>
+
+                            {{ if .Local.Modded }}
+                            <span>, <b>Mods Installed</b>: {{ .Mod_count }}</span>
+                            {{ end }}
+
+                            <span>, Version: {{ .Application_version.Game_version }}</span>
+
+                            {{ if .Has_password }}
+                            <span>, <b>Has Password</b></span>
+                            {{ end }}
+
+                            , (<a href="{{ .Local.ConnectURL }}">connect</a>)
+                        </div>
+                    </div>
+                    <div class="server-details">
+                        {{ if .Description }}
+                        <ul class="desc">
+                            <li>Description: {{ .Description }}</li>
+                        </ul>
+                        {{ end }}
+                        {{ if .Players }}
+                        <ul class="player-list">
+                            <li>Players:
+                                {{ range .Players }}
+                                {{ . }},
+                                {{ end }}
+                            </li>
+                        </ul>
+                        {{ end }}
+                        {{ if .Tags }}
+                        <ul class="tag-list">
+                            <li>
+                                Tags:
+                                {{ range .Tags }}
+                                {{ . }},
+                                {{ end }}
+                            </li>
+                        </ul>
+                        {{ end }}
+                    </div>
+                    <br>
+                </div>
+                {{ end }}
+                {{ if .ServersCount }}
+                Page: {{ .CurrentPage }} / {{ .NumPages }}
+                <button type="submit" onclick="goPrevPage()"><</button> <button type="submit" class="nextPageButton">></button>
+                        <div class="server-footer">
+                            <p>Brought to you by <a href="https://go-game.net">go-game.net</a> and <a
+                                    href="https://m45sci.xyz">M45-Science</a></p>
+                        </div>
+                        {{ end }}
     </div>
 </body>
 

@@ -116,4 +116,7 @@ func fetchServerList() {
 		totalPlayers = totalPlayers + len(item.Players)
 	}
 	sParam.PlayerCount = totalPlayers
+
+	//Write to cache file
+	WriteServerCache()
 }
