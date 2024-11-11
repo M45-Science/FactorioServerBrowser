@@ -28,7 +28,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 15px 20px;
+            padding: 0 0;
             background: #1e1e1e;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.7);
             position: fixed;
@@ -43,7 +43,7 @@
             text-shadow: 0px 0px 10px rgba(230, 126, 34, 0.8);
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 6;
         }
 
         .logo {
@@ -68,6 +68,7 @@
             width: 100%;
             max-width: 1200px;
             color: #e0e0e0;
+            margin-bottom: 16px;
         }
 
         .stats {
@@ -88,7 +89,7 @@
 
         .form-group select,
         .form-group input {
-            padding: 6px;
+            padding: 2px;
             border-radius: 4px;
             border: none;
             background-color: #2d2d2d;
@@ -209,18 +210,54 @@
         }
     </style>
     <script>
-        function goToUrl() {
-            const searchTextField = document.getElementById('textField');
-            const searchSelectedOption = document.getElementById('searchType').value;
-            const searchValue = encodeURIComponent(searchTextField.value.trim());
+    function goToUrl() {
+        const searchTextField = document.getElementById('textField');
+        const searchSelectedOption = document.getElementById('searchType').value;
+        const searchValue = searchTextField.value.trim();
 
-            const versTextField = document.getElementById('versField').value ? `&version=${document.getElementById('versField').value}` : '';
-            const sortSelectedOption = document.getElementById('sortType').value;
-            const onlySelectedOption = document.getElementById('onlyType').value;
+        const versTextField = document.getElementById('versField').value ? `version=${encodeURIComponent(document.getElementById('versField').value)}` : '';
+        const sortSelectedOption = document.getElementById('sortType').value;
+        const onlySelectedOption = document.getElementById('onlyType').value;
+        const passSelectedOption = document.getElementById('passType').value;
+        const playSelectedOption = document.getElementById('playType').value;
 
-            const url = `?${searchSelectedOption}=${searchValue}&${sortSelectedOption}&${onlySelectedOption}${versTextField}`;
-            window.location.href = url;
+        // Initialize an array to hold URL parameters
+        const params = [];
+
+        // Add search parameter only if it has a non-empty value
+        if (searchValue) {
+            params.push(`${searchSelectedOption}=${encodeURIComponent(searchValue)}`);
         }
+
+        // Add version parameter if it is present
+        if (versTextField) {
+            params.push(versTextField);
+        }
+
+        // Add sort option if it is not the default 'sort-players'
+        if (sortSelectedOption !== 'sort-players') {
+            params.push(sortSelectedOption);
+        }
+
+        // Add only option if it is not the default 'both'
+        if (onlySelectedOption !== 'both') {
+            params.push(onlySelectedOption);
+        }
+
+        // Add pass option if it is not the default 'nopass'
+        if (passSelectedOption !== 'nopass') {
+            params.push(passSelectedOption);
+        }
+
+        // Add play option if it is not the default 'anyplay'
+        if (passSelectedOption !== 'anyplay') {
+            params.push(playSelectedOption);
+        }
+
+        // Build the final URL with only necessary parameters
+        const url = `?${params.join('&')}`;
+        window.location.href = url;
+    }
 
         function goNextPage(maxPage) {
             const currentUrl = new URL(window.location.href);
@@ -262,12 +299,8 @@
             <img src="https://m45sci.xyz/m45-2024b-128.png" alt="M45-Science logo" class="logo">
             <a href="https://m45sci.xyz" target="_blank">M45-Science</a>: Factorio Server Browser
         </h1>
-        <p class="subtitle">By [<a href="https://go-game.net" target="_blank">go-game.net</a>] [<a href="changelog.html">ChangeLog</a>] [<a href="https://github.com/M45-Science/goFactorioServerViewer">Git</a>] -- NOT affiliated with <a href="https://www.factorio.com/game/about" target="_blank">Wube Software</a>.</p>
-        
+        <p class="subtitle">[<a href="https://go-game.net" target="_blank">go-game.net</a>] [<a href="changelog.html">ChangeLog</a>] [<a href="https://github.com/M45-Science/goFactorioServerViewer">Git</a>] -- Players Online: {{ .PlayerCount }} -- NOT affiliated with <a href="https://www.factorio.com/game/about" target="_blank">Wube Software</a>.</p>        
         <div class="top-bar">
-            <span class="stats">Matches Found: {{ .ServersCount }}</span>
-            <span class="stats">Players Online: {{ .PlayerCount }}</span>
-            
             <div class="form-group">
                 <label>Sort by:</label>
                 <select id="sortType">
@@ -284,6 +317,24 @@
                     <option value="both">Any</option>
                     <option value="vanilla" {{if .VanillaOnly}}selected{{end}}>No (Vanilla)</option>
                     <option value="modded" {{if .ModdedOnly}}selected{{end}}>Yes (Modded)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Password:</label>
+                <select id="passType">
+                    <option value="nopass">No Password</option>
+                    <option value="haspass" {{if .HasPass}}selected{{end}}>Has Password</option>
+                    <option value="anypass" {{if .AnyPass}}selected{{end}}>Either</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Players:</label>
+                <select id="playType">
+                    <option value="anyplay">Any</option>
+                    <option value="hasplay" {{if .HasPlay}}selected{{end}}>Has Players</option>
+                    <option value="noplay" {{if .NoPlay}}selected{{end}}>No Players</option>
                 </select>
             </div>
             
@@ -307,8 +358,9 @@
                     {{ end }}
                 </select>
             </div>
-            
+
             <div class="form-group">
+                <label>Search:</label>
                 <input type="text" id="textField" value="{{.Searched}}" placeholder="Search...">
             </div>
             
@@ -319,9 +371,11 @@
                 <span>Page: {{ .CurrentPage }} / {{ .NumPages }}</span>
                 <button onclick="goNextPage({{ .NumPages }})">&gt;</button>
             </div>
+
+    <span class="stats">Results: {{ .ServersCount }}</span>
+
         </div>
     </div>
-
     <div class="content-container">
         {{ range .ServerList.Servers }}
         <div class="server-card {{ if .Has_password }}password-protected{{ end }}" data-url="{{ .Local.ConnectURL }}">

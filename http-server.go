@@ -85,6 +85,18 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 				tempParams.ModdedOnly = false
 			}
 
+			if strings.EqualFold(key, "haspass") {
+				tempParams.HasPass = true
+			} else if strings.EqualFold(key, "anypass") {
+				tempParams.AnyPass = true
+			}
+
+			if strings.EqualFold(key, "hasplay") {
+				tempParams.HasPlay = true
+			} else if strings.EqualFold(key, "noplay") {
+				tempParams.NoPlay = true
+			}
+
 			//Don't parse multiple searches
 			if !filterFound {
 				if len(values[0]) == 0 {
@@ -194,26 +206,68 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 
 		tempParams.ServerList.Servers = sortServers(tempServersList, sortBy)
 		tempParams.ServersCount = len(tempServersList)
+	}
 
-		if tempParams.ModdedOnly {
-			var tempServers []ServerListItem
-			for _, server := range tempParams.ServerList.Servers {
-				if server.Mod_count > 0 {
-					tempServers = append(tempServers, server)
-				}
+	if tempParams.ModdedOnly {
+		var tempServers []ServerListItem
+		for _, server := range tempParams.ServerList.Servers {
+			if server.Mod_count > 0 {
+				tempServers = append(tempServers, server)
 			}
-			tempParams.ServerList.Servers = tempServers
-			tempParams.ServersCount = len(tempServers)
-		} else if tempParams.VanillaOnly {
-			var tempServers []ServerListItem
-			for _, server := range tempParams.ServerList.Servers {
-				if server.Mod_count == 0 {
-					tempServers = append(tempServers, server)
-				}
-			}
-			tempParams.ServerList.Servers = tempServers
-			tempParams.ServersCount = len(tempServers)
 		}
+		tempParams.ServerList.Servers = tempServers
+		tempParams.ServersCount = len(tempServers)
+	} else if tempParams.VanillaOnly {
+		var tempServers []ServerListItem
+		for _, server := range tempParams.ServerList.Servers {
+			if server.Mod_count == 0 {
+				tempServers = append(tempServers, server)
+			}
+		}
+		tempParams.ServerList.Servers = tempServers
+		tempParams.ServersCount = len(tempServers)
+	}
+
+	if tempParams.AnyPass {
+		//
+	} else if tempParams.HasPass {
+		var tempServers []ServerListItem
+		for _, server := range tempParams.ServerList.Servers {
+			if server.Has_password {
+				tempServers = append(tempServers, server)
+			}
+		}
+		tempParams.ServerList.Servers = tempServers
+		tempParams.ServersCount = len(tempServers)
+	} else {
+		var tempServers []ServerListItem
+		for _, server := range tempParams.ServerList.Servers {
+			if !server.Has_password {
+				tempServers = append(tempServers, server)
+			}
+		}
+		tempParams.ServerList.Servers = tempServers
+		tempParams.ServersCount = len(tempServers)
+	}
+
+	if tempParams.HasPlay {
+		var tempServers []ServerListItem
+		for _, server := range tempParams.ServerList.Servers {
+			if len(server.Players) > 0 {
+				tempServers = append(tempServers, server)
+			}
+		}
+		tempParams.ServerList.Servers = tempServers
+		tempParams.ServersCount = len(tempServers)
+	} else if tempParams.NoPlay {
+		var tempServers []ServerListItem
+		for _, server := range tempParams.ServerList.Servers {
+			if len(server.Players) == 0 {
+				tempServers = append(tempServers, server)
+			}
+		}
+		tempParams.ServerList.Servers = tempServers
+		tempParams.ServersCount = len(tempServers)
 	}
 
 	if len(tempParams.FVersion) > 0 {

@@ -11,11 +11,6 @@ type appVersionData struct {
 	Platform      string
 }
 
-type modDescriptionData struct {
-	Name    string
-	Version string
-}
-
 type CacheData struct {
 	Version int
 	Servers []ServerListItem
@@ -24,18 +19,13 @@ type CacheData struct {
 type ServerListItem struct {
 	Application_version appVersionData
 	Description         string
-	//Game_id                   int
-	Game_time_elapsed interface{}
-	Has_password      bool
-	Host_address      string
-	//Max_players               int
-	Mod_count int
-	//Mods                      []modDescriptionData
-	Name    string
-	Players []string
-	//Require_user_verification bool
-	//Server_id                 string
-	Tags []string
+	Game_time_elapsed   interface{}
+	Has_password        bool
+	Host_address        string
+	Mod_count           int
+	Name                string
+	Players             []string
+	Tags                []string
 
 	//Local data
 	Local ServerMetaData
@@ -56,6 +46,8 @@ type ServerStateData struct {
 	FTag, FName, FDesc, FPlayer    bool
 	SPlayers, SName, STime, SRTime bool
 	VanillaOnly, ModdedOnly        bool
+	HasPass, AnyPass               bool
+	HasPlay, NoPlay                bool
 	VersionList                    []VersionData
 
 	FVersion, UserAgent, Searched string
