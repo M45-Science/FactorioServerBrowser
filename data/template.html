@@ -328,14 +328,14 @@
             <div class="server-info">
                 <div class="server-title">{{ .Name }}</div>
                 {{ if gt (len .Players) 0 }}
-                    <div class="highlightWhite">Players: {{ len .Players }}</div>
+                    <div class="highlight">Players: {{ len .Players }}</div>
                 {{ else }}
-                    <div>Players: None</div>
+                <div class="highlightRed">Players: NONE</div>
                 {{ end }}
                 {{ if gt .Mod_count 0 }}
                     <div class="highlight">Mods: {{ .Mod_count }}</div>
-                {{ else }}
-                    <div>Mods Installed: {{ .Mod_count }}</div>
+                    {{ else }}
+                    <div>Vanilla</div>
                 {{ end }}
             </div>
             <div class="server-details">
