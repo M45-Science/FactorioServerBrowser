@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	Version   = "0.2.7"
-	VDate     = "11-11-2024-1225p"
+	Version   = "0.2.8"
+	VDate     = "11-11-2024-0343p"
 	ProgName  = "goFactServView"
 	UserAgent = ProgName + "-" + Version
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
@@ -22,7 +22,7 @@ const (
 	//How long to wait for list server
 	ReqTimeout = time.Second * 3
 	//How often we can make a request, including on error.
-	ReqThrottle = time.Second * 15
+	ReqThrottle = time.Second * 30
 	//How often we can refresh when new requests come in
 	RefreshInterval = time.Minute * 5
 	//Timeout before our http(s) servers time out
