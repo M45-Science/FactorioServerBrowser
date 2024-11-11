@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	Version   = "0.2.5"
-	VDate     = "10302024-0949"
+	Version   = "0.2.7"
+	VDate     = "11-11-2024-1225p"
 	ProgName  = "goFactServView"
 	UserAgent = ProgName + "-" + Version
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
@@ -52,7 +52,6 @@ var (
 func main() {
 
 	//Parse parameters
-	FetchLock.Lock()
 	sParam = ServerStateData{UserAgent: UserAgent}
 	sParam.URL = flag.String("url", "multiplayer.factorio.com", "domain name to query")
 	sParam.Token = flag.String("token", "", "Matchmaking API token")
@@ -69,7 +68,6 @@ func main() {
 		os.Exit(1)
 		return
 	}
-	FetchLock.Unlock()
 
 	//Defer to give log time to write on close
 	defer time.Sleep(time.Second * 2)
@@ -80,7 +78,7 @@ func main() {
 	setupDurafmt()
 
 	//Read cache.json
-	ReadServerCache()
+	fetchServerList()
 
 	//Parse template.html
 	parseTemplate()
