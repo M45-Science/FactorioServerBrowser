@@ -54,6 +54,7 @@
         .subtitle {
             font-size: 0.85em;
             color: #a0a0a0;
+            margin-bottom: 10px;
         }
 
         .top-bar {
@@ -122,29 +123,35 @@
         }
 
         .server-card {
-            background: #1e1e1e;
-            margin: 15px 20px;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
+            background: #2a2a2a;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.6);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
             cursor: pointer;
-            transition: box-shadow 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 2px solid transparent;
         }
 
         .server-card:hover {
-            box-shadow: 0px 0px 0px 2px #e67e22 inset;
+            transform: translateY(-5px);
+            box-shadow: 0px 4px 20px rgba(78, 204, 226, 0.8);
+            border-color: #e67e22;
         }
 
         .server-header {
+            grid-column: 1 / -1;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 10px;
         }
 
         .server-title {
-            font-size: 1.2em;
+            font-size: 1.4em;
             color: #f5f5f5;
         }
 
@@ -154,13 +161,18 @@
         }
 
         .server-details {
-            margin-top: 10px;
             color: #c0c0c0;
             font-size: 0.9em;
+            line-height: 1.4em;
+        }
+
+        .highlight {
+            color: #e67e22;
+            font-weight: bold;
         }
 
         .content-container {
-            padding-top: 200px;
+            padding-top: 220px;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -219,7 +231,7 @@
             <img src="https://m45sci.xyz/m45-2024b-128.png" alt="M45-Science logo" class="logo">
             <a href="https://m45sci.xyz" target="_blank">M45-Science</a>: Factorio Server Browser
         </h1>
-        <p class="subtitle">By <a href="https://go-game.net" target="_blank">go-game.net</a></p>
+        <p class="subtitle">By <a href="https://go-game.net" target="_blank">go-game.net</a>. Not affiliated with <a href="https://www.factorio.com/game/about" target="_blank">Wube Software</a>.</p>
         
         <div class="top-bar">
             <span class="stats">Matches Found: {{ .ServersCount }}</span>
@@ -280,34 +292,28 @@
     </div>
 
     <div class="content-container">
-        <p class="info">Listings are cached and brought to you by <a href="https://m45sci.xyz">m45sci.xyz</a> and <a href="https://go-game.net">go-game.net</a>.</p>
-        
         {{ range .ServerList.Servers }}
         <div class="server-card" data-url="{{ .Local.ConnectURL }}">
             <div class="server-header">
                 <h2 class="server-title">{{ .Name }}</h2>
                 <div class="server-meta">
-                    <span>Players: {{ len .Players }} | Time: {{ .Local.TimeStr }}</span>
+                    {{ if gt (len .Players) 0 }}
+                        <span class="highlight">Players: {{ len .Players }}</span>
+                    {{ else }}
+                        <span>Players: None</span>
+                    {{ end }}
+                    | Time: {{ .Local.TimeStr }}
                     {{ if .Local.Modded }} | Mods Installed: {{ .Mod_count }} {{ end }}
                     | Version: {{ .Application_version.Game_version }}
-                    {{ if .Has_password }} | <b>Has Password</b> {{ end }}
+                    {{ if .Has_password }} | <span class="highlight">Has Password</span> {{ end }}
                 </div>
             </div>
             <div class="server-details">
                 {{ if .Description }}
-                <ul class="desc">
-                    <li>Description: {{ .Description }}</li>
-                </ul>
-                {{ end }}
-                {{ if .Players }}
-                <ul class="player-list">
-                    <li>Players: {{ range .Players }}{{ . }}, {{ end }}</li>
-                </ul>
+                    <div>Description: {{ .Description }}</div>
                 {{ end }}
                 {{ if .Tags }}
-                <ul class="tag-list">
-                    <li>Tags: {{ range .Tags }}{{ . }}, {{ end }}</li>
-                </ul>
+                    <div>Tags: {{ range .Tags }}{{ . }}, {{ end }}</div>
                 {{ end }}
             </div>
         </div>
