@@ -67,6 +67,8 @@ type ServerMetaData struct {
 	TimeStr    string
 	Minutes    int
 	Modded     bool
+	Players    int
+	HasPlayers bool
 
 	Icon     string
 	Homepage string

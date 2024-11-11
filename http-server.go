@@ -43,7 +43,6 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 		LastAttempt:  sParam.LastAttempt,
 		UserAgent:    sParam.UserAgent,
 		ServerList:   sParam.ServerList,
-		ServersCount: sParam.ServersCount,
 		ItemsPerPage: ItemsPerPage,
 		VersionList:  sParam.VersionList,
 		PlayerCount:  sParam.PlayerCount,
@@ -52,7 +51,6 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 	FetchLock.Unlock()
 
 	//Create a blank server list
-	tempServersList := []ServerListItem{}
 	page := 1
 
 	//Log request
@@ -62,7 +60,6 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 	queryItems := r.URL.Query()
 	if len(queryItems) > 0 {
 		filterFound := false
-		sortFound := false
 		for key, values := range queryItems {
 
 			//Skip if invalid
@@ -99,65 +96,67 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 
 			//Don't parse multiple searches
 			if !filterFound {
-				if len(values[0]) == 0 {
-					tempServersList = tempParams.ServerList.Servers
-					filterFound = true
-					tempParams.Searched = values[0]
-					tempParams.FTag = true
-				} else if !filterFound && strings.EqualFold(key, "name") {
+				if !filterFound && strings.EqualFold(key, "name") {
+					var tempServers []ServerListItem
 					filterFound = true
 					tempParams.Searched = values[0]
 					tempParams.SName = true
 					if values[0] == "" {
-						tempServersList = tempParams.ServerList.Servers
+						tempParams.ServerList.Servers = tempServers
 						continue
 					}
 					for s, server := range tempParams.ServerList.Servers {
 						lName := strings.ToLower(server.Name)
 						lVal := strings.ToLower(values[0])
 						if strings.Contains(lName, lVal) {
-							tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
+							tempServers = append(tempServers, tempParams.ServerList.Servers[s])
 							break
 						}
 					}
+					tempParams.ServerList.Servers = tempServers
 				} else if !filterFound && strings.EqualFold(key, "desc") {
+					var tempServers []ServerListItem
 					filterFound = true
 					tempParams.Searched = values[0]
 					tempParams.FDesc = true
 					if values[0] == "" {
-						tempServersList = tempParams.ServerList.Servers
+						tempParams.ServerList.Servers = tempServers
 						continue
 					}
 					for s, server := range tempParams.ServerList.Servers {
 						lDesc := strings.ToLower(server.Description)
 						lVal := strings.ToLower(values[0])
 						if strings.Contains(lDesc, lVal) {
-							tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
+							tempServers = append(tempServers, tempParams.ServerList.Servers[s])
 							break
 						}
 					}
+					tempParams.ServerList.Servers = tempServers
 				} else if !filterFound && strings.EqualFold(key, "tag") {
+					var tempServers []ServerListItem
 					filterFound = true
 					tempParams.Searched = values[0]
 					tempParams.FTag = true
 					if values[0] == "" {
-						tempServersList = tempParams.ServerList.Servers
+						tempParams.ServerList.Servers = tempServers
 						continue
 					}
 					for s, server := range tempParams.ServerList.Servers {
 						for _, tag := range server.Tags {
 							if strings.EqualFold(values[0], tag) {
-								tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
+								tempServers = append(tempServers, tempParams.ServerList.Servers[s])
 								break
 							}
 						}
 					}
+					tempParams.ServerList.Servers = tempServers
 				} else if !filterFound && strings.EqualFold(key, "player") {
+					var tempServers []ServerListItem
 					filterFound = true
 					tempParams.Searched = values[0]
 					tempParams.FPlayer = true
 					if values[0] == "" {
-						tempServersList = tempParams.ServerList.Servers
+						tempParams.ServerList.Servers = tempServers
 						continue
 					}
 					for s, server := range tempParams.ServerList.Servers {
@@ -165,11 +164,12 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 							lPlayer := strings.ToLower(player)
 							lVal := strings.ToLower(values[0])
 							if strings.Contains(lPlayer, lVal) {
-								tempServersList = append(tempServersList, tempParams.ServerList.Servers[s])
+								tempServers = append(tempServers, tempParams.ServerList.Servers[s])
 								break
 							}
 						}
 					}
+					tempParams.ServerList.Servers = tempServers
 				}
 			}
 
@@ -177,19 +177,15 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			if strings.EqualFold(key, "sort-players") {
 				sortBy = SORT_PLAYER
 				tempParams.SPlayers = true
-				sortFound = true
 			} else if strings.EqualFold(key, "sort-name") {
 				sortBy = SORT_NAME
 				tempParams.SName = true
-				sortFound = true
 			} else if strings.EqualFold(key, "sort-time") {
 				sortBy = SORT_TIME
 				tempParams.STime = true
-				sortFound = true
 			} else if strings.EqualFold(key, "sort-rtime") {
 				sortBy = SORT_RTIME
 				tempParams.SRTime = true
-				sortFound = true
 			} else if strings.EqualFold(key, "page") {
 				val, err := strconv.ParseUint(values[0], 10, 64)
 				if err != nil {
@@ -199,93 +195,11 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-
-		if !sortFound {
-			tempParams.SPlayers = true
-		}
-
-		tempParams.ServerList.Servers = sortServers(tempServersList, sortBy)
-		tempParams.ServersCount = len(tempServersList)
 	}
-
-	if tempParams.ModdedOnly {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if server.Mod_count > 0 {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	} else if tempParams.VanillaOnly {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if server.Mod_count == 0 {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	}
-
-	if tempParams.AnyPass {
-		//
-	} else if tempParams.HasPass {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if server.Has_password {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	} else {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if !server.Has_password {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	}
-
-	if tempParams.HasPlay {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if len(server.Players) > 0 {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	} else if tempParams.NoPlay {
-		var tempServers []ServerListItem
-		for _, server := range tempParams.ServerList.Servers {
-			if len(server.Players) == 0 {
-				tempServers = append(tempServers, server)
-			}
-		}
-		tempParams.ServerList.Servers = tempServers
-		tempParams.ServersCount = len(tempServers)
-	}
-
-	if len(tempParams.FVersion) > 0 {
-		temp := tempParams.ServerList.Servers
-		tempParams.ServerList.Servers = []ServerListItem{}
-
-		count := 0
-		for _, item := range temp {
-			if item.Application_version.Game_version != tempParams.FVersion {
-				continue
-			}
-			count++
-			tempParams.ServerList.Servers = append(tempParams.ServerList.Servers, item)
-		}
-		tempParams.ServersCount = count
-	}
-
+	filterServers(tempParams)
+	tempParams.ServerList.Servers = sortServers(tempParams.ServerList.Servers, sortBy)
 	//Build a single page of results
+
 	paginateList(page, tempParams)
 
 	//Execute template
@@ -293,6 +207,39 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		cwlog.DoLog(true, "Error: %v", err)
 	}
+}
+
+func filterServers(tempParams *ServerStateData) {
+	var tempServers []ServerListItem
+	for _, server := range tempParams.ServerList.Servers {
+		if tempParams.ModdedOnly && !server.Local.Modded {
+			continue
+		}
+		if tempParams.VanillaOnly && server.Local.Modded {
+			continue
+		}
+		if !tempParams.AnyPass {
+			if tempParams.HasPass && !server.Has_password {
+				continue
+			}
+			if !tempParams.HasPass && server.Has_password {
+				continue
+			}
+		}
+		if tempParams.HasPlay && !server.Local.HasPlayers {
+			continue
+		}
+		if tempParams.NoPlay && server.Local.HasPlayers {
+			continue
+		}
+		if tempParams.FVersion != "" &&
+			server.Application_version.Game_version != tempParams.FVersion {
+			continue
+		}
+		tempServers = append(tempServers, server)
+	}
+	tempParams.ServerList.Servers = tempServers
+	tempParams.ServersCount = len(tempParams.ServerList.Servers)
 }
 
 // Present a single page of results
@@ -316,6 +263,7 @@ func paginateList(page int, tempParams *ServerStateData) {
 	}
 	//Reject invalid page
 	if pageStart < 0 {
+		cwlog.DoLog(true, "Page start less than 0.")
 		return
 	}
 

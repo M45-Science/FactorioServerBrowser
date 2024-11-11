@@ -89,6 +89,8 @@ func fetchServerList() {
 		}
 		//Convert some of the data for web
 		newServerList[i].Local.Modded = item.Mod_count > 0
+		newServerList[i].Local.Players = len(item.Players)
+		newServerList[i].Local.HasPlayers = len(item.Players) > 0
 		mins := getMinutes(item)
 		newServerList[i].Local.Minutes = getMinutes(item)
 		newServerList[i].Local.TimeStr = updateTime(mins)

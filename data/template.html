@@ -381,12 +381,12 @@
         <div class="server-card {{ if .Has_password }}password-protected{{ end }}" data-url="{{ .Local.ConnectURL }}">
             <div class="server-info">
                 <div class="server-title">{{ .Name }}</div>
-                {{ if gt (len .Players) 0 }}
-                    <div class="highlight">Players: {{ len .Players }}</div>
+                {{ if .Local.HasPlayers }}
+                    <div class="highlight">Players: {{ .Local.Players }}</div>
                 {{ else }}
                 <div class="highlightRed">Players: NONE</div>
                 {{ end }}
-                {{ if gt .Mod_count 0 }}
+                {{ if .Local.Modded }}
                     <div class="highlight">Mods: {{ .Mod_count }}</div>
                     {{ else }}
                     <div>Vanilla</div>
