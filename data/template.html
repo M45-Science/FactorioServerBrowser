@@ -99,7 +99,7 @@
         .pagination-box {
             display: flex;
             align-items: center;
-            margin-left: 10px;
+            margin-left: 20px;
         }
 
         .pagination-box span {
@@ -144,11 +144,11 @@
         }
 
         .server-card.password-protected {
-            background: #1e1e1e;
+            background: rgb(31, 31, 31);
         }
 
         .server-card:hover::after {
-            content: "Click to connect to the server";
+            content: "Click to connect!";
             position: absolute;
             bottom: 10px;
             right: 10px;
@@ -157,10 +157,11 @@
         }
 
         .server-info {
-            width: 150px;
+            width: 300px;
             font-size: 0.9em;
             color: #b0b0b0;
-            line-height: 1.6em;
+            line-height: 2em;
+            padding-right: 16px;
         }
 
         .server-details {
@@ -168,6 +169,7 @@
             font-size: 0.9em;
             line-height: 1.4em;
             flex: 1;
+            padding-right: 16px;
         }
 
         .server-title {
@@ -180,10 +182,19 @@
             color: #e67e22;
             font-weight: bold;
         }
+        .highlightRed {
+            color: #ff4242;
+            font-weight: bold;
+        }
+        .highlightWhite {
+            color: #bbbbbb;
+            font-size: 1.25em
+        }
+
 
         .right-meta {
             font-size: 0.9em;
-            color: #e67e22;
+            color: #cccccc;
             text-align: right;
         }
 
@@ -317,17 +328,14 @@
             <div class="server-info">
                 <div class="server-title">{{ .Name }}</div>
                 {{ if gt (len .Players) 0 }}
-                    <div class="highlight">Players: {{ len .Players }}</div>
+                    <div class="highlightWhite">Players: {{ len .Players }}</div>
                 {{ else }}
                     <div>Players: None</div>
                 {{ end }}
                 {{ if gt .Mod_count 0 }}
-                    <div class="highlight">Mods Installed: {{ .Mod_count }}</div>
+                    <div class="highlight">Mods: {{ .Mod_count }}</div>
                 {{ else }}
                     <div>Mods Installed: {{ .Mod_count }}</div>
-                {{ end }}
-                {{ if .Has_password }}
-                    <div class="highlight">Has Password</div>
                 {{ end }}
             </div>
             <div class="server-details">
@@ -339,6 +347,9 @@
                 {{ end }}
             </div>
             <div class="right-meta">
+                {{ if .Has_password }}
+                    <div class="highlightRed">🔒 Has Password</div><br>
+                {{ end }}
                 <div>Time: {{ .Local.TimeStr }}</div>
                 <div>Version: {{ .Application_version.Game_version }}</div>
             </div>
