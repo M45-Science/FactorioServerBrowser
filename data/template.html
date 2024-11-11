@@ -99,7 +99,7 @@
         .pagination-box {
             display: flex;
             align-items: center;
-            margin-left: auto;
+            margin-left: 10px;
         }
 
         .pagination-box span {
@@ -128,12 +128,13 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.6);
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 10px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             border: 2px solid transparent;
+            position: relative;
         }
 
         .server-card:hover {
@@ -142,28 +143,33 @@
             border-color: #e67e22;
         }
 
-        .server-header {
-            grid-column: 1 / -1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+        .server-card:hover::after {
+            content: "Click to connect to the server";
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.85em;
+            color: #e67e22;
         }
 
-        .server-title {
-            font-size: 1.4em;
-            color: #f5f5f5;
-        }
-
-        .server-meta {
-            color: #b0b0b0;
+        .server-info {
+            width: 150px;
             font-size: 0.9em;
+            color: #b0b0b0;
+            line-height: 1.6em;
         }
 
         .server-details {
             color: #c0c0c0;
             font-size: 0.9em;
             line-height: 1.4em;
+            flex: 1;
+        }
+
+        .server-title {
+            font-size: 1.4em;
+            color: #f5f5f5;
+            margin-bottom: 5px;
         }
 
         .highlight {
@@ -171,10 +177,20 @@
             font-weight: bold;
         }
 
+        .right-meta {
+            font-size: 0.9em;
+            color: #e67e22;
+            text-align: right;
+        }
+
         .content-container {
             padding-top: 220px;
             max-width: 1200px;
             margin: 0 auto;
+        }
+
+        .spacing {
+            margin-top: 5px;
         }
     </style>
     <script>
@@ -294,27 +310,33 @@
     <div class="content-container">
         {{ range .ServerList.Servers }}
         <div class="server-card" data-url="{{ .Local.ConnectURL }}">
-            <div class="server-header">
-                <h2 class="server-title">{{ .Name }}</h2>
-                <div class="server-meta">
-                    {{ if gt (len .Players) 0 }}
-                        <span class="highlight">Players: {{ len .Players }}</span>
-                    {{ else }}
-                        <span>Players: None</span>
-                    {{ end }}
-                    | Time: {{ .Local.TimeStr }}
-                    {{ if .Local.Modded }} | Mods Installed: {{ .Mod_count }} {{ end }}
-                    | Version: {{ .Application_version.Game_version }}
-                    {{ if .Has_password }} | <span class="highlight">Has Password</span> {{ end }}
-                </div>
+            <div class="server-info">
+                <div class="server-title">{{ .Name }}</div>
+                {{ if gt (len .Players) 0 }}
+                    <div class="highlight">Players: {{ len .Players }}</div>
+                {{ else }}
+                    <div>Players: None</div>
+                {{ end }}
+                {{ if gt .Mod_count 0 }}
+                    <div class="highlight">Mods Installed: {{ .Mod_count }}</div>
+                {{ else }}
+                    <div>Mods Installed: {{ .Mod_count }}</div>
+                {{ end }}
+                {{ if .Has_password }}
+                    <div class="highlight">Has Password</div>
+                {{ end }}
             </div>
             <div class="server-details">
                 {{ if .Description }}
                     <div>Description: {{ .Description }}</div>
                 {{ end }}
                 {{ if .Tags }}
-                    <div>Tags: {{ range .Tags }}{{ . }}, {{ end }}</div>
+                    <div class="spacing">Tags: {{ range .Tags }}{{ . }}, {{ end }}</div>
                 {{ end }}
+            </div>
+            <div class="right-meta">
+                <div>Time: {{ .Local.TimeStr }}</div>
+                <div>Version: {{ .Application_version.Game_version }}</div>
             </div>
         </div>
         {{ end }}
