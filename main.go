@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	Version   = "0.2.8"
-	VDate     = "11-11-2024-0343p"
+	Version   = "0.2.9"
+	VDate     = "01-11-2025-0810p"
 	ProgName  = "goFactServView"
 	UserAgent = ProgName + "-" + Version
 	VString   = ProgName + "v" + Version + " (" + VDate + ") "
