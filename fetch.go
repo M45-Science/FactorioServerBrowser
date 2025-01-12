@@ -66,7 +66,7 @@ func fetchServerList() {
 	newServerList := []ServerListItem{}
 	jsonErr := json.Unmarshal(body, &newServerList)
 	if jsonErr != nil {
-		log.Fatal("fetch server list: " + jsonErr.Error() + "\n" + string(body))
+		cwlog.DoLog(true, jsonErr.Error())
 	}
 
 	//Remove Factorio tags

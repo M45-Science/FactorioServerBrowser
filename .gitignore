@@ -3,3 +3,4 @@ go.sh
 data/*.json
 data/log
 data/certs/*.pem
+start.sh
