@@ -52,13 +52,10 @@ func (item ServerListItem) hasTag(search string) bool {
 	return false
 }
 
-// Sort servers by sortBy
-const doPromoteM45 = true
-
-func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
+func sortServers(promote bool, list []ServerListItem, sortBy int) []ServerListItem {
 	if sortBy == SORT_NAME {
 		sort.Slice(list, func(i, j int) bool {
-			if doPromoteM45 {
+			if promote {
 				iNum := len(list[i].Players)
 				jNum := len(list[j].Players)
 				if iNum > 0 && list[i].hasTag("m45") {
@@ -83,7 +80,7 @@ func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
 
 			iNum := len(list[i].Players)
 			jNum := len(list[j].Players)
-			if doPromoteM45 {
+			if promote {
 				if iNum > 0 && list[i].hasTag("m45") {
 					return true
 				}

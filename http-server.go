@@ -56,10 +56,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 	//Log request
 	cwlog.DoLog(false, "Request: %v", r.RequestURI)
 	sortBy := SORT_PLAYER
+	filterFound := false
 
 	queryItems := r.URL.Query()
 	if len(queryItems) > 0 {
-		filterFound := false
 		for key, values := range queryItems {
 			//Skip if invalid
 			if len(key) == 0 || len(values) == 0 {
@@ -154,7 +154,7 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	//Filter, sort, paginate
 	filterServers(tempParams)
-	tempParams.ServerList.Servers = sortServers(tempParams.ServerList.Servers, sortBy)
+	tempParams.ServerList.Servers = sortServers(!filterFound, tempParams.ServerList.Servers, sortBy)
 	paginateList(page, tempParams)
 
 	//Execute template

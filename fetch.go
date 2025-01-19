@@ -97,7 +97,7 @@ func fetchServerList() {
 	}
 
 	//Sort list
-	newServerList = sortServers(newServerList, SORT_PLAYER)
+	newServerList = sortServers(false, newServerList, SORT_PLAYER)
 
 	//Save last refresh time
 	sParam.LastRefresh = time.Now().UTC()

@@ -46,7 +46,7 @@ func ReadServerCache() {
 			}
 
 			if len(tempServerList.Servers) > MinValidCount {
-				sParam.ServerList.Servers = sortServers(tempServerList.Servers, SORT_PLAYER)
+				sParam.ServerList.Servers = sortServers(false, tempServerList.Servers, SORT_PLAYER)
 				getVersions()
 				sParam.LastRefresh = lastRefresh
 				sParam.ServersCount = len(tempServerList.Servers)
