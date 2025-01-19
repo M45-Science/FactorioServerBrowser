@@ -42,10 +42,32 @@ func setupDurafmt() {
 	}
 }
 
+func (item ServerListItem) hasTag(search string) bool {
+	for _, tag := range item.Tags {
+		if strings.EqualFold(tag, search) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Sort servers by sortBy
+const doPromoteM45 = true
+
 func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
 	if sortBy == SORT_NAME {
 		sort.Slice(list, func(i, j int) bool {
+			if doPromoteM45 {
+				iNum := len(list[i].Players)
+				jNum := len(list[j].Players)
+				if iNum > 0 && list[i].hasTag("m45") {
+					return true
+				}
+				if jNum > 0 && list[j].hasTag("m45") {
+					return false
+				}
+			}
 			return list[i].Name < list[j].Name
 		})
 	} else if sortBy == SORT_TIME {
@@ -58,8 +80,17 @@ func sortServers(list []ServerListItem, sortBy int) []ServerListItem {
 		})
 	} else {
 		sort.Slice(list, func(i, j int) bool {
+
 			iNum := len(list[i].Players)
 			jNum := len(list[j].Players)
+			if doPromoteM45 {
+				if iNum > 0 && list[i].hasTag("m45") {
+					return true
+				}
+				if jNum > 0 && list[j].hasTag("m45") {
+					return false
+				}
+			}
 			if iNum == jNum {
 				return list[i].Name > list[j].Name
 			}
