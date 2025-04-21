@@ -55,6 +55,10 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 
 	//Log request
 	cwlog.DoLog(false, "Request: %v", r.RequestURI)
+
+	//Handy for quick debug templates
+	//parseTemplate()
+
 	sortBy := SORT_PLAYER
 	filterFound := false
 
