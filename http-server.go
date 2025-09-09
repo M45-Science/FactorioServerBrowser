@@ -158,7 +158,8 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 	}
 	//Filter, sort, paginate
 	filterServers(tempParams)
-	tempParams.ServerList.Servers = sortServers(!filterFound, tempParams.ServerList.Servers, sortBy)
+	//tempParams.ServerList.Servers = sortServers(!filterFound, tempParams.ServerList.Servers, sortBy)
+	tempParams.ServerList.Servers = sortServers(false, tempParams.ServerList.Servers, sortBy)
 	paginateList(page, tempParams)
 
 	//Execute template
