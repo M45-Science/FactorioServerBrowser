@@ -2,48 +2,90 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"goFactServView/cwlog"
 	"os"
+	"sync"
 	"time"
 )
 
+var (
+	certLock    sync.RWMutex
+	currentCert *tls.Certificate
+)
+
 func autoUpdateCert() {
+	fullchainStat, privkeyStat := certFilesStat()
+
 	for {
 		time.Sleep(time.Minute)
 
-		filePath := "data/certs/fullchain.pem"
-		initialStat, erra := os.Stat(filePath)
-
-		if erra != nil {
+		updatedFullchain, updatedPrivkey := certFilesStat()
+		if updatedFullchain == nil || updatedPrivkey == nil {
 			continue
 		}
 
-		for initialStat != nil {
-			time.Sleep(time.Minute)
-
-			stat, errb := os.Stat(filePath)
-			if errb != nil {
-				break
+		if certStatChanged(fullchainStat, updatedFullchain) || certStatChanged(privkeyStat, updatedPrivkey) {
+			if err := reloadCerts(); err != nil {
+				cwlog.DoLog(true, "Cert reload failed: %v", err)
+				continue
 			}
-
-			if stat.Size() != initialStat.Size() || stat.ModTime() != initialStat.ModTime() {
-				cwlog.DoLog(true, "Cert updated, closing.")
-				time.Sleep(time.Second * 5)
-				os.Exit(0)
-				break
-			}
+			fullchainStat = updatedFullchain
+			privkeyStat = updatedPrivkey
+			cwlog.DoLog(true, "Reloaded TLS certificate.")
 		}
-
 	}
 }
 
-func loadCerts() tls.Certificate {
-	/* Load certificates */
+func reloadCerts() error {
 	cert, err := tls.LoadX509KeyPair("data/certs/fullchain.pem", "data/certs/privkey.pem")
 	if err != nil {
-		cwlog.DoLog(true, "Error loading TLS key pair: %v data/certs/(fullchain.pem, privkey.pem)", err)
-		return tls.Certificate{}
+		return fmt.Errorf("error loading TLS key pair data/certs/(fullchain.pem, privkey.pem): %w", err)
+	}
+
+	certLock.Lock()
+	currentCert = &cert
+	certLock.Unlock()
+	return nil
+}
+
+func loadCerts() error {
+	if err := reloadCerts(); err != nil {
+		return err
 	}
 	cwlog.DoLog(true, "Loaded certs.")
-	return cert
+	return nil
+}
+
+func getCertificate(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+	certLock.RLock()
+	defer certLock.RUnlock()
+
+	if currentCert == nil {
+		return nil, fmt.Errorf("TLS certificate is not loaded")
+	}
+
+	return currentCert, nil
+}
+
+func certFilesStat() (*os.FileInfo, *os.FileInfo) {
+	fullchainStat, err := os.Stat("data/certs/fullchain.pem")
+	if err != nil {
+		return nil, nil
+	}
+
+	privkeyStat, err := os.Stat("data/certs/privkey.pem")
+	if err != nil {
+		return nil, nil
+	}
+
+	return &fullchainStat, &privkeyStat
+}
+
+func certStatChanged(previous, current *os.FileInfo) bool {
+	if previous == nil || current == nil {
+		return previous != current
+	}
+
+	return (*previous).Size() != (*current).Size() || (*previous).ModTime() != (*current).ModTime()
 }

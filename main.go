@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"goFactServView/cwlog"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -78,7 +77,10 @@ func main() {
 	setupDurafmt()
 
 	//Read cache.json
-	fetchServerList()
+	ReadServerCache()
+	if err := fetchServerList(); err != nil {
+		cwlog.DoLog(true, "Initial fetch failed: %v", err)
+	}
 
 	//Parse template.html
 	parseTemplate()
@@ -92,15 +94,18 @@ func main() {
 	go func() {
 		buf := fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTP)
 		if err := http.ListenAndServe(buf, http.HandlerFunc(reqHandle)); err != nil {
-			log.Fatalf("ListenAndServe error: %v", err)
+			cwlog.DoLog(true, "ListenAndServe error: %v", err)
 		}
 	}()
 
 	http.HandleFunc("/", reqHandle)
 
-	cert := loadCerts()
+	if err := loadCerts(); err != nil {
+		cwlog.DoLog(true, "%v", err)
+		return
+	}
 	config := &tls.Config{
-		Certificates:       []tls.Certificate{cert},
+		GetCertificate:     getCertificate,
 		InsecureSkipVerify: false,
 	}
 
@@ -122,7 +127,7 @@ func main() {
 	err := server.ListenAndServeTLS("", "")
 	if err != nil {
 		cwlog.DoLog(true, "ListenAndServeTLS: %v", err)
-		panic(err)
+		return
 	}
 
 	cwlog.DoLog(true, "Goodbye.")
