@@ -169,8 +169,8 @@ func RemoveFactorioTags(input string) string {
 }
 
 // Generate a quick-connect link
-func MakeSteamURL(host string) string {
-	return fmt.Sprintf("steam://run/427520//--mp-connect %v", host)
+func MakeSteamURL(host string) template.URL {
+	return template.URL(fmt.Sprintf("steam://run/427520//--mp-connect%%20%v", host))
 }
 
 func getVersions() {

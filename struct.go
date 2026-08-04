@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"time"
 )
 
@@ -63,7 +64,7 @@ type versionInt struct {
 }
 
 type ServerMetaData struct {
-	ConnectURL string
+	ConnectURL template.URL
 	TimeStr    string
 	Minutes    int
 	Modded     bool
