@@ -61,6 +61,13 @@ func main() {
 	bindPortHTTP = flag.Int("httpPort", 80, "port to bind to")
 	flag.Parse()
 
+	if *sParam.Token == "" {
+		*sParam.Token = os.Getenv("FACTORIO_TOKEN")
+	}
+	if *sParam.Username == "" {
+		*sParam.Username = os.Getenv("FACTORIO_USERNAME")
+	}
+
 	//Require token/username
 	if *sParam.Token == "" || *sParam.Username == "" {
 		cwlog.DoLog(false, "You must supply a username and token. -h for help.")
@@ -90,13 +97,31 @@ func main() {
 
 	go backgroundUpdateList()
 
+	if *bindPortHTTP <= 0 && *bindPortHTTPS <= 0 {
+		cwlog.DoLog(true, "No HTTP or HTTPS port enabled.")
+		return
+	}
+
+	errChan := make(chan error, 2)
+
 	//HTTP listen
-	go func() {
-		buf := fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTP)
-		if err := http.ListenAndServe(buf, http.HandlerFunc(reqHandle)); err != nil {
-			cwlog.DoLog(true, "ListenAndServe error: %v", err)
+	if *bindPortHTTP > 0 {
+		go func() {
+			buf := fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTP)
+			if err := http.ListenAndServe(buf, http.HandlerFunc(reqHandle)); err != nil {
+				errChan <- fmt.Errorf("ListenAndServe error: %w", err)
+			}
+		}()
+	}
+
+	if *bindPortHTTPS <= 0 {
+		cwlog.DoLog(true, "HTTPS disabled.")
+		cwlog.DoLog(true, "Server started.")
+		if err := <-errChan; err != nil {
+			cwlog.DoLog(true, "%v", err)
 		}
-	}()
+		return
+	}
 
 	http.HandleFunc("/", reqHandle)
 
@@ -109,24 +134,29 @@ func main() {
 		InsecureSkipVerify: false,
 	}
 
-	server := &http.Server{
-		Addr:         fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTPS),
-		Handler:      http.DefaultServeMux,
-		TLSConfig:    config,
-		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
-
-		ReadTimeout:  ServerTimeout,
-		WriteTimeout: ServerTimeout,
-		IdleTimeout:  ServerTimeout,
-	}
-
 	go autoUpdateCert()
 
 	//https listen
 	cwlog.DoLog(true, "Server started.")
-	err := server.ListenAndServeTLS("", "")
-	if err != nil {
-		cwlog.DoLog(true, "ListenAndServeTLS: %v", err)
+	go func() {
+		server := &http.Server{
+			Addr:         fmt.Sprintf("%v:%v", *bindIP, *bindPortHTTPS),
+			Handler:      http.DefaultServeMux,
+			TLSConfig:    config,
+			TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+
+			ReadTimeout:  ServerTimeout,
+			WriteTimeout: ServerTimeout,
+			IdleTimeout:  ServerTimeout,
+		}
+
+		if err := server.ListenAndServeTLS("", ""); err != nil {
+			errChan <- fmt.Errorf("ListenAndServeTLS: %w", err)
+		}
+	}()
+
+	if err := <-errChan; err != nil {
+		cwlog.DoLog(true, "%v", err)
 		return
 	}
 

@@ -170,8 +170,7 @@ func RemoveFactorioTags(input string) string {
 
 // Generate a quick-connect link
 func MakeSteamURL(host string) string {
-	buf := fmt.Sprintf("https://go-game.net/gosteam/427520.--mp-connect%%20%v", host)
-	return buf
+	return fmt.Sprintf("steam://run/427520//--mp-connect %v", host)
 }
 
 func getVersions() {

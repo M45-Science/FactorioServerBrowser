@@ -1,6 +1,6 @@
 # Web viewer for the Factorio server list, with caching
 
-[Try a live verison here](http://factorio.go-game.net/)
+[Try a live version here](https://list.m45sci.xyz/)
 
 Usage of ./goFactServView:
 
