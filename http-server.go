@@ -161,6 +161,7 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 	//tempParams.ServerList.Servers = sortServers(!filterFound, tempParams.ServerList.Servers, sortBy)
 	tempParams.ServerList.Servers = sortServers(false, tempParams.ServerList.Servers, sortBy)
 	paginateList(page, tempParams)
+	populateSpaceAgeRequirements(tempParams.ServerList.Servers, *tempParams.URL)
 
 	//Execute template
 	err := tmpl.Execute(w, tempParams)

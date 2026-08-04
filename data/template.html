@@ -447,6 +447,9 @@ html {
                     {{ else }}
                     <div>Vanilla</div>
                 {{ end }}
+                {{ if .Local.SpaceAgeRequired }}
+                    <div class="highlight">Space Age required</div>
+                {{ end }}
             </div>
             <div class="server-details">
                 {{ if .Description }}

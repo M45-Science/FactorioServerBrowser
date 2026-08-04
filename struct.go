@@ -20,6 +20,7 @@ type CacheData struct {
 type ServerListItem struct {
 	Application_version appVersionData
 	Description         string
+	Game_id             uint64
 	Game_time_elapsed   interface{}
 	Has_password        bool
 	Host_address        string
@@ -64,12 +65,13 @@ type versionInt struct {
 }
 
 type ServerMetaData struct {
-	ConnectURL template.URL
-	TimeStr    string
-	Minutes    int
-	Modded     bool
-	Players    int
-	HasPlayers bool
+	ConnectURL       template.URL
+	TimeStr          string
+	Minutes          int
+	Modded           bool
+	SpaceAgeRequired bool
+	Players          int
+	HasPlayers       bool
 
 	Icon     string
 	Homepage string
