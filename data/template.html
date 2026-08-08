@@ -266,6 +266,7 @@ html {
         const versTextField = document.getElementById('versField').value ? `version=${encodeURIComponent(document.getElementById('versField').value)}` : '';
         const sortSelectedOption = document.getElementById('sortType').value;
         const onlySelectedOption = document.getElementById('onlyType').value;
+        const spaceAgeSelectedOption = document.getElementById('spaceAgeType').value;
         const passSelectedOption = document.getElementById('passType').value;
         const playSelectedOption = document.getElementById('playType').value;
 
@@ -290,6 +291,9 @@ html {
         // Add only option if it is not the default 'both'
         if (onlySelectedOption !== 'both') {
             params.push(onlySelectedOption);
+        }
+        if (spaceAgeSelectedOption !== 'any') {
+            params.push(`spaceAge=${encodeURIComponent(spaceAgeSelectedOption)}`);
         }
 
         // Add pass option if it is not the default 'nopass'
@@ -368,7 +372,16 @@ html {
                     <option value="sort-rtime" {{if .SRTime}}selected{{end}}>Minutes: Older</option>
                 </select>
             </div>
-            
+
+            <div class="form-group">
+                <label>Space Age:</label>
+                <select id="spaceAgeType">
+                    <option value="any" {{if and (not .SpaceAgeOnly) (not .NoSpaceAge)}}selected{{end}}>Any</option>
+                    <option value="spaceage" {{if .SpaceAgeOnly}}selected{{end}}>Space Age</option>
+                    <option value="nospaceage" {{if .NoSpaceAge}}selected{{end}}>No Space Age</option>
+                </select>
+            </div>
+
             <div class="form-group">
                 <label>Mods:</label>
                 <select id="onlyType">

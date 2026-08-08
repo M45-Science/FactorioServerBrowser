@@ -53,6 +53,7 @@ type ServerStateData struct {
 	VersionList                    []VersionData
 
 	FVersion, UserAgent, Searched string
+	SpaceAgeOnly, NoSpaceAge bool
 }
 
 type VersionData struct {

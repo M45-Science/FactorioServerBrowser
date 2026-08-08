@@ -85,6 +85,20 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 				tempParams.ModdedOnly = false
 			}
 
+			if strings.EqualFold(key, "spaceage") {
+				switch strings.ToLower(values[0]) {
+				case "spaceage", "space-age":
+					tempParams.SpaceAgeOnly = true
+					tempParams.NoSpaceAge = false
+				case "nospaceage", "no-space-age":
+					tempParams.SpaceAgeOnly = false
+					tempParams.NoSpaceAge = true
+				default:
+					tempParams.SpaceAgeOnly = false
+					tempParams.NoSpaceAge = false
+				}
+			}
+
 			if strings.EqualFold(key, "haspass") {
 				tempParams.HasPass = true
 			} else if strings.EqualFold(key, "anypass") {
@@ -156,12 +170,14 @@ func reqHandle(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	//Populate space-age flag for all current servers to support filtering.
+	populateSpaceAgeRequirements(tempParams.ServerList.Servers, *tempParams.URL)
+
 	//Filter, sort, paginate
 	filterServers(tempParams)
 	//tempParams.ServerList.Servers = sortServers(!filterFound, tempParams.ServerList.Servers, sortBy)
 	tempParams.ServerList.Servers = sortServers(false, tempParams.ServerList.Servers, sortBy)
 	paginateList(page, tempParams)
-	populateSpaceAgeRequirements(tempParams.ServerList.Servers, *tempParams.URL)
 
 	//Execute template
 	err := tmpl.Execute(w, tempParams)
@@ -199,6 +215,13 @@ func filterServers(tempParams *ServerStateData) {
 			continue
 		}
 		if tempParams.VanillaOnly && server.Local.Modded {
+			continue
+		}
+
+		if tempParams.SpaceAgeOnly && !server.Local.SpaceAgeRequired {
+			continue
+		}
+		if tempParams.NoSpaceAge && server.Local.SpaceAgeRequired {
 			continue
 		}
 
