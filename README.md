@@ -2,6 +2,17 @@
 
 [Try a live version here](https://list.m45sci.xyz/)
 
+![Factorio server browser](docs/server-browser.png)
+
+To regenerate the screenshot with deterministic demo server data, run:
+
+```sh
+go run ./scripts/render-readme-screenshot.go
+```
+
+Chrome or Chromium is required. Set `SCREENSHOT_BROWSER` if its executable is
+not available as `google-chrome`, `chromium`, or `chromium-browser`.
+
 Usage of ./goFactServView:
 
   -httpPort int
